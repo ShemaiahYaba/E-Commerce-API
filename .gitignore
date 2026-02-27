@@ -1,0 +1,32 @@
+# Local/docs (optional)
+flaskplaybook.md
+project.md
+projectextend.md
+webchinex/
+
+# Environment and secrets
+.env
+.env.local
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv/
+env/
+
+# Flask / instance
+instance/
+*.db
+
+# IDE and test
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+.cursor

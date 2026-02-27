@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}API Webdocs – E-Commerce API{% endblock %}
+{% block content %}
+<div class="bg-white shadow rounded-lg p-6">
+  <h1 class="text-3xl font-bold mb-4">API Webdocs</h1>
+  <p class="mb-6 text-gray-600">Explore and test the E-Commerce API.</p>
+  <div class="grid gap-4">
+    <a href="/docs" class="block p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-200">
+      <span class="font-semibold text-blue-600">Swagger UI</span>
+      <span class="block text-sm text-gray-500">Interactive API documentation at /docs</span>
+    </a>
+    <div class="p-4 border border-gray-200 rounded-lg">
+      <span class="font-semibold">Base URL</span>
+      <code class="block mt-1 text-sm bg-gray-100 p-2 rounded">/api/v1/</code>
+    </div>
+    <div class="p-4 border border-gray-200 rounded-lg">
+      <span class="font-semibold">Endpoints</span>
+      <ul class="mt-2 text-sm space-y-1 text-gray-600">
+        <li><strong>Auth:</strong> /api/v1/auth/register, /api/v1/auth/login, /api/v1/auth/logout</li>
+        <li><strong>Users:</strong> /api/v1/users/me, /api/v1/admin/users</li>
+        <li><strong>Categories:</strong> /api/v1/categories</li>
+        <li><strong>Products:</strong> /api/v1/products (search: ?q=, category_id=, min_price=, max_price=)</li>
+        <li><strong>Cart:</strong> /api/v1/cart, /api/v1/cart/items</li>
+        <li><strong>Orders:</strong> /api/v1/orders</li>
+        <li><strong>Reviews:</strong> /api/v1/products/&lt;id&gt;/reviews</li>
+        <li><strong>Wishlist:</strong> /api/v1/wishlist</li>
+        <li><strong>Admin:</strong> /api/v1/admin/stats, /api/v1/admin/inventory, /api/v1/admin/orders</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
