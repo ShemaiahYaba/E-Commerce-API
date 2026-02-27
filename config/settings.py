@@ -14,6 +14,15 @@ def _default_database_url() -> str:
     return f"sqlite:///{instance / 'ecommerce.db'}"
 
 
+def _parse_cors_origins(v: str | List[str]) -> List[str]:
+    """Accept comma-separated string or list from env."""
+    if isinstance(v, list):
+        return v
+    if isinstance(v, str):
+        return [x.strip() for x in v.split(",") if x.strip()]
+    return []
+
+
 class BaseConfig(BaseSettings):
     """Base config; env and .env loaded."""
 
@@ -29,7 +38,13 @@ class BaseConfig(BaseSettings):
     SECRET_KEY: str = "dev-secret-change-in-production"
     JWT_SECRET_KEY: str = "dev-jwt-secret-change-in-production"
     DATABASE_URL: str = ""
-    CORS_ORIGINS: List[str] = []
+    # Comma-separated in .env (e.g. CORS_ORIGINS=http://localhost:3000,http://localhost:5000)
+    CORS_ORIGINS: str = ""
+
+    @property
+    def cors_origins_list(self) -> List[str]:
+        """CORS_ORIGINS as a list (from comma-separated string in .env)."""
+        return _parse_cors_origins(self.CORS_ORIGINS)
 
     def __init__(self, **kwargs):  # type: ignore[no-untyped-def]
         if "DATABASE_URL" not in kwargs or not kwargs.get("DATABASE_URL"):
@@ -41,7 +56,7 @@ class DevelopmentConfig(BaseConfig):
     """Development settings."""
 
     DEBUG: bool = True
-    CORS_ORIGINS: List[str] = ["*"]
+    CORS_ORIGINS: str = "*"  # allowed as single value; _parse_cors_origins returns ["*"]
 
 
 class TestingConfig(BaseConfig):

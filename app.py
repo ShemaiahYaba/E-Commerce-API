@@ -25,8 +25,8 @@ def create_app(config_name: str | None = None) -> Flask:
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["JWT_SECRET_KEY"] = settings.JWT_SECRET_KEY
     app.config["JWT_TOKEN_LOCATION"] = ["headers"]
-    if settings.CORS_ORIGINS:
-        app.config["CORS_ORIGINS"] = settings.CORS_ORIGINS
+    if settings.cors_origins_list:
+        app.config["CORS_ORIGINS"] = settings.cors_origins_list
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -38,7 +38,7 @@ def create_app(config_name: str | None = None) -> Flask:
         jti = jwt_payload.get("jti")
         return jti and is_token_revoked(jti)
 
-    CORS(app, origins=settings.CORS_ORIGINS or ["*"], supports_credentials=True)
+    CORS(app, origins=settings.cors_origins_list or ["*"], supports_credentials=True)
 
     Swagger(
         app,
