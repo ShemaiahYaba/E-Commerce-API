@@ -2,7 +2,7 @@
 
 from decimal import Decimal
 from typing import List, Optional
-from sqlalchemy import or_, func
+from sqlalchemy import func
 
 from database import db
 from models import Product, ProductImage, Category, Review
@@ -19,7 +19,7 @@ def _build_query(
     min_rating: Optional[float] = None,
     in_stock_only: bool = False,
 ):
-    """Build product query with filters."""
+    """Build product query with filters (private helper)."""
     q = Product.query.filter(Product.is_active == True)
     if search:
         q = q.filter(Product.name.ilike(f"%{search}%") | Product.description.ilike(f"%{search}%"))
@@ -32,7 +32,6 @@ def _build_query(
     if in_stock_only:
         q = q.filter(Product.stock > 0)
     if min_rating is not None:
-        # Subquery: products with avg review >= min_rating
         subq = (
             db.session.query(Review.product_id, func.avg(Review.rating).label("avg_rating"))
             .group_by(Review.product_id)
@@ -41,6 +40,34 @@ def _build_query(
         )
         q = q.join(subq, Product.id == subq.c.product_id)
     return q
+
+
+def _verify_category_exists(category_id: int) -> None:
+    """Raise CategoryNotFoundError if category does not exist."""
+    if db.session.get(Category, category_id) is None:
+        raise CategoryNotFoundError(category_id)
+
+
+def _check_duplicate_sku(sku: str, exclude_product_id: Optional[int] = None) -> None:
+    """Raise DuplicateSKUError if sku already exists (optionally excluding one product)."""
+    query = Product.query.filter_by(sku=sku.strip())
+    if exclude_product_id is not None:
+        query = query.filter(Product.id != exclude_product_id)
+    if query.first():
+        raise DuplicateSKUError(sku)
+
+
+def _create_product_object(data: ProductCreate) -> Product:
+    """Build Product instance from schema (private helper)."""
+    return Product(
+        name=data.name.strip(),
+        description=data.description.strip() if data.description else None,
+        price=data.price,
+        stock=data.stock,
+        sku=data.sku.strip(),
+        category_id=data.category_id,
+        is_active=data.is_active,
+    )
 
 
 def get_all_paginated(
@@ -72,23 +99,13 @@ def get_by_id(product_id: int) -> Product:
 
 def create(data: ProductCreate) -> Product:
     """Create product (admin)."""
-    if db.session.get(Category, data.category_id) is None:
-        raise CategoryNotFoundError(data.category_id)
-    if Product.query.filter_by(sku=data.sku.strip()).first():
-        raise DuplicateSKUError(data.sku)
-    p = Product(
-        name=data.name.strip(),
-        description=data.description.strip() if data.description else None,
-        price=data.price,
-        stock=data.stock,
-        sku=data.sku.strip(),
-        category_id=data.category_id,
-        is_active=data.is_active,
-    )
-    db.session.add(p)
+    _verify_category_exists(data.category_id)
+    _check_duplicate_sku(data.sku)
+    product = _create_product_object(data)
+    db.session.add(product)
     db.session.commit()
-    db.session.refresh(p)
-    return p
+    db.session.refresh(product)
+    return product
 
 
 def update(product_id: int, data: ProductUpdate) -> Product:
@@ -96,10 +113,9 @@ def update(product_id: int, data: ProductUpdate) -> Product:
     p = get_by_id(product_id)
     payload = data.model_dump(exclude_unset=True)
     if "sku" in payload and payload["sku"] != p.sku:
-        if Product.query.filter_by(sku=payload["sku"].strip()).first():
-            raise DuplicateSKUError(payload["sku"])
-    if "category_id" in payload and db.session.get(Category, payload["category_id"]) is None:
-        raise CategoryNotFoundError(payload["category_id"])
+        _check_duplicate_sku(payload["sku"], exclude_product_id=product_id)
+    if "category_id" in payload:
+        _verify_category_exists(payload["category_id"])
     for k, v in payload.items():
         if k == "description":
             setattr(p, k, v.strip() if v else None)
