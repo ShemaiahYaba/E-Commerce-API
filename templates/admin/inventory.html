@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Inventory Management — Admin{% endblock %}
+
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <a href="/web/admin" class="text-xs text-indigo-500 hover:text-indigo-700 font-medium block mb-1">← Dashboard</a>
+    <h1 class="text-2xl font-bold text-slate-800">Inventory</h1>
+    <p class="text-slate-500 text-sm mt-0.5">{{ total }} product{% if total != 1 %}s{% endif %}{% if low_only %} · low stock only (< {{ threshold }}){% endif %}</p>
+  </div>
+</div>
+
+<!-- Filters -->
+<form method="GET" action="/web/admin/inventory" class="bg-white rounded-2xl border border-slate-200 p-4 mb-6 flex flex-wrap gap-3 items-end">
+  <div class="flex-1 min-w-48">
+    <label class="block text-xs font-semibold text-slate-500 mb-1">Search</label>
+    <input type="text" name="q" value="{{ search_query }}" placeholder="Name or SKU…" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+  </div>
+  <div>
+    <label class="block text-xs font-semibold text-slate-500 mb-1">Low stock threshold</label>
+    <input type="number" name="threshold" value="{{ threshold }}" min="1" class="w-24 px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+  </div>
+  <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer pb-1">
+    <input type="checkbox" name="low_only" value="1"{% if low_only %} checked{% endif %} class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-400">
+    Low stock only
+  </label>
+  <button type="submit" class="btn-primary text-white text-sm font-semibold px-4 py-2 rounded-xl">Filter</button>
+  <a href="/web/admin/inventory" class="flex items-center px-3 py-2 rounded-xl border border-slate-200 text-slate-400 hover:text-slate-600 text-sm">Reset</a>
+</form>
+
+<!-- Inventory Table -->
+<div class="bg-white rounded-2xl border border-slate-200 overflow-hidden mb-6">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-slate-100 bg-slate-50">
+          <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Product</th>
+          <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">SKU</th>
+          <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Price</th>
+          <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Stock</th>
+          <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+          <th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Update Stock</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for product in products %}
+        <tr class="hover:bg-slate-50 transition-colors {% if product.stock == 0 %}bg-red-50/30{% elif product.stock < threshold %}bg-amber-50/30{% endif %}">
+          <td class="px-5 py-3.5">
+            <div class="font-medium text-slate-800">{{ product.name }}</div>
+            <div class="text-xs text-slate-400">{{ product.category.name if product.category else '—' }}</div>
+          </td>
+          <td class="px-5 py-3.5 font-mono text-xs text-slate-500">{{ product.sku }}</td>
+          <td class="px-5 py-3.5 font-semibold text-slate-700">${{ "%.2f"|format(product.price|float) }}</td>
+          <td class="px-5 py-3.5">
+            <span class="px-2.5 py-1 rounded-lg text-xs font-bold {% if product.stock == 0 %}bg-red-100 text-red-600{% elif product.stock < threshold %}bg-amber-100 text-amber-700{% else %}bg-emerald-100 text-emerald-700{% endif %}">
+              {{ product.stock }}
+            </span>
+          </td>
+          <td class="px-5 py-3.5">
+            <span class="px-2 py-0.5 rounded-full text-xs font-semibold {% if product.is_active %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-500{% endif %}">{% if product.is_active %}Active{% else %}Inactive{% endif %}</span>
+          </td>
+          <td class="px-5 py-3.5">
+            <form method="POST" action="/web/admin/inventory/{{ product.id }}/stock" class="flex items-center justify-end gap-2">
+              <input type="number" name="stock" value="{{ product.stock }}" min="0" class="w-20 px-2 py-1 border border-slate-200 rounded-lg text-sm text-center focus:outline-none focus:ring-1 focus:ring-indigo-400">
+              <button type="submit" class="text-xs font-medium text-indigo-600 hover:text-indigo-800 border border-indigo-200 rounded-lg px-2.5 py-1 hover:bg-indigo-50 transition">Save</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="px-5 py-8 text-center text-sm text-slate-400">No products found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Pagination -->
+{% if pages > 1 %}
+<div class="flex items-center justify-center gap-2">
+  {% if page > 1 %}<a href="?page={{ page - 1 }}{% if search_query %}&q={{ search_query }}{% endif %}{% if low_only %}&low_only=1{% endif %}&threshold={{ threshold }}" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition">← Prev</a>{% endif %}
+  <span class="px-4 py-2 rounded-xl text-sm font-semibold text-white shadow-sm" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">{{ page }} / {{ pages }}</span>
+  {% if page < pages %}<a href="?page={{ page + 1 }}{% if search_query %}&q={{ search_query }}{% endif %}{% if low_only %}&low_only=1{% endif %}&threshold={{ threshold }}" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition">Next →</a>{% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

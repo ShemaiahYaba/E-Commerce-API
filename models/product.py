@@ -25,16 +25,16 @@ class Product(db.Model):
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )
 
-    order_items = db.relationship("OrderItem", backref="product", lazy="dynamic")
-    cart_items = db.relationship("CartItem", backref="product", lazy="dynamic")
+    order_items = db.relationship("OrderItem", backref="product", lazy="select")
+    cart_items = db.relationship("CartItem", backref="product", lazy="select")
     reviews = db.relationship(
-        "Review", backref="product", lazy="dynamic", cascade="all, delete-orphan"
+        "Review", backref="product", lazy="select", cascade="all, delete-orphan"
     )
     wishlist_items = db.relationship(
-        "WishlistItem", backref="product", lazy="dynamic", cascade="all, delete-orphan"
+        "WishlistItem", backref="product", lazy="select", cascade="all, delete-orphan"
     )
     images = db.relationship(
-        "ProductImage", backref="product", lazy="dynamic", cascade="all, delete-orphan"
+        "ProductImage", backref="product", lazy="select", cascade="all, delete-orphan"
     )
 
 

@@ -19,4 +19,4 @@ class Category(db.Model):
     )
 
     parent = db.relationship("Category", remote_side=[id], backref="children")
-    products = db.relationship("Product", backref="category", lazy="dynamic")
+    products = db.relationship("Product", backref="category", lazy="select")

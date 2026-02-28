@@ -9,3 +9,15 @@ def require_login():
         flash("Please log in to continue.", "error")
         return redirect(url_for("web_auth.login"))
     return None
+
+
+def require_admin():
+    """Return a redirect if user is not logged in or not an admin, else None."""
+    guard = require_login()
+    if guard:
+        return guard
+    if session.get("user_role") != "admin":
+        flash("Admin access required.", "error")
+        return redirect(url_for("web_products.products_list"))
+    return None
+

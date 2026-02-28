@@ -1,4 +1,4 @@
-"""User service: get/update profile, admin list/deactivate."""
+"""User service: get/update profile, admin list/deactivate/activate/delete."""
 
 from typing import List, Optional
 from database import db
@@ -41,7 +41,15 @@ def get_all_paginated(page: int = 1, per_page: int = 20) -> dict:
 
 
 def set_active(user_id: int, is_active: bool) -> None:
-    """Deactivate/activate user (admin)."""
+    """Deactivate or reactivate a user (admin)."""
     user = get_by_id(user_id)
     user.is_active = is_active
     db.session.commit()
+
+
+def delete_user(user_id: int) -> None:
+    """Hard delete a user record (admin). Raises UserNotFoundError if not found."""
+    user = get_by_id(user_id)
+    db.session.delete(user)
+    db.session.commit()
+

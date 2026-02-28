@@ -21,7 +21,7 @@ class Order(db.Model):
     )
 
     order_items = db.relationship(
-        "OrderItem", backref="order", lazy="dynamic", cascade="all, delete-orphan"
+        "OrderItem", backref="order", lazy="select", cascade="all, delete-orphan"
     )
 
 

@@ -92,7 +92,7 @@ def list_users():
 @jwt_required()
 @admin_required
 def deactivate_user(user_id):
-    """Deactivate user (admin only).
+    """Deactivate user (admin).
     ---
     tags: [users]
     security: [Bearer: []]
@@ -106,4 +106,61 @@ def deactivate_user(user_id):
         description: User deactivated
     """
     user_service.set_active(user_id, False)
-    return success_response(data={"message": "User deactivated"})
+    return success_response(data={"user_id": user_id, "is_active": False, "message": "User deactivated"})
+
+
+@users_bp.route("/<int:user_id>/activate", methods=["PATCH"])
+@jwt_required()
+@admin_required
+def activate_user(user_id):
+    """Re-activate a previously deactivated user (admin).
+    ---
+    tags: [users]
+    security: [Bearer: []]
+    parameters:
+      - name: user_id
+        in: path
+        type: integer
+        required: true
+    responses:
+      200:
+        description: User activated
+      404:
+        description: User not found
+    """
+    try:
+        user_service.set_active(user_id, True)
+    except Exception as e:
+        if hasattr(e, "status_code"):
+            return error_response(e.message, e.status_code)
+        raise
+    return success_response(data={"user_id": user_id, "is_active": True, "message": "User activated"})
+
+
+@users_bp.route("/<int:user_id>", methods=["DELETE"])
+@jwt_required()
+@admin_required
+def delete_user(user_id):
+    """Permanently delete a user (admin).
+    ---
+    tags: [users]
+    security: [Bearer: []]
+    parameters:
+      - name: user_id
+        in: path
+        type: integer
+        required: true
+    responses:
+      204:
+        description: User deleted
+      404:
+        description: User not found
+    """
+    try:
+        user_service.delete_user(user_id)
+    except Exception as e:
+        if hasattr(e, "status_code"):
+            return error_response(e.message, e.status_code)
+        raise
+    return "", HTTPStatus.NO_CONTENT
+

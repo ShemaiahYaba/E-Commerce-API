@@ -22,15 +22,15 @@ class User(db.Model):
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )
 
-    orders = db.relationship("Order", backref="user", lazy="dynamic", cascade="all, delete-orphan")
+    orders = db.relationship("Order", backref="user", lazy="select", cascade="all, delete-orphan")
     cart_items = db.relationship(
-        "CartItem", backref="user", lazy="dynamic", cascade="all, delete-orphan"
+        "CartItem", backref="user", lazy="select", cascade="all, delete-orphan"
     )
     reviews = db.relationship(
-        "Review", backref="user", lazy="dynamic", cascade="all, delete-orphan"
+        "Review", backref="user", lazy="select", cascade="all, delete-orphan"
     )
     wishlist_items = db.relationship(
-        "WishlistItem", backref="user", lazy="dynamic", cascade="all, delete-orphan"
+        "WishlistItem", backref="user", lazy="select", cascade="all, delete-orphan"
     )
 
     def set_password(self, password: str) -> None:
