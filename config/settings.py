@@ -7,12 +7,6 @@ from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-def _default_database_url() -> str:
-    base = Path(__file__).resolve().parent.parent
-    instance = base / "instance"
-    instance.mkdir(exist_ok=True)
-    return f"sqlite:///{instance / 'ecommerce.db'}"
-
 
 def _parse_cors_origins(v: str | List[str]) -> List[str]:
     """Accept comma-separated string or list from env."""
@@ -47,8 +41,6 @@ class BaseConfig(BaseSettings):
         return _parse_cors_origins(self.CORS_ORIGINS)
 
     def __init__(self, **kwargs):  # type: ignore[no-untyped-def]
-        if "DATABASE_URL" not in kwargs or not kwargs.get("DATABASE_URL"):
-            kwargs.setdefault("DATABASE_URL", _default_database_url())
         super().__init__(**kwargs)
 
 
