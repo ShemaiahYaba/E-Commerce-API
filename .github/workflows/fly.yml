@@ -14,6 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only
+      - name: Deploy to Fly.io
+        run: |
+          flyctl secrets set DATABASE_URL="postgresql://postgres.hlftcfhrztsuhnkvkobv:qurpoiajdkn@aws-1-eu-west-2.pooler.supabase.com:5432/postgres" --app e-commerce-api-qnpzvq --stage
+          flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: FlyV1 fm2_lJPECAAAAAAAEcmexBArcTGrZPWia1hfjDvGR8KlwrVodHRwczovL2FwaS5mbHkuaW8vdjGWAJLOABbDdh8Lk7lodHRwczovL2FwaS5mbHkuaW8vYWFhL3YxxDzcUfoO2EeWim2lyCetIO6fXUMYxqyAh0vlnpW0/Q3KvHuaH8AS9QX3dX9Villu3D3qQ/FwbigC5FW0DoHETqQ50V6P1zC7++oDjQNS7knO33wdYHPUq1uzV3kVd0MRnoF76WjyYTgKvSJ9ykeXwAcZwq1EwuctoYNQ4osKsJvP+3c/Yw0+FWyBLUKK2A2SlAORgc4A2qo1HwWRgqdidWlsZGVyH6J3Zx8BxCCw2Lwi+JrfuLMPgNjwNmTLx3ltZhRLCkwVEMqQ7CXqwg==,fm2_lJPETqQ50V6P1zC7++oDjQNS7knO33wdYHPUq1uzV3kVd0MRnoF76WjyYTgKvSJ9ykeXwAcZwq1EwuctoYNQ4osKsJvP+3c/Yw0+FWyBLUKK2MQQ7EC26mgR6jEHoUHQQZc9OcO5aHR0cHM6Ly9hcGkuZmx5LmlvL2FhYS92MZgEks5poumvzmmkO00XzgAV1iwKkc4AFdYsDMQQon3wRs6vPJpRQt3YstGNF8QgFw723a9DEbyjrl2CQuJriPvCHvIGPePl2OAI2Sk+434=
