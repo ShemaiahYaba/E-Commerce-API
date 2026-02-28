@@ -19,7 +19,26 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/api/v1/auth")
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
-    """Register a new user. Returns user and tokens."""
+    """Register a new user. Returns user and tokens.
+    ---
+    tags: [auth]
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required: [email, password, first_name, last_name]
+          properties:
+            email: { type: string, format: email }
+            password: { type: string }
+            first_name: { type: string }
+            last_name: { type: string }
+    responses:
+      201:
+        description: User created and tokens returned
+      409:
+        description: Email already exists
+    """
     try:
         data = UserCreate.model_validate(request.get_json())
     except ValidationError as e:
@@ -43,7 +62,24 @@ def register():
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    """Login with email and password. Returns tokens and user."""
+    """Login with email and password. Returns tokens and user.
+    ---
+    tags: [auth]
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required: [email, password]
+          properties:
+            email: { type: string }
+            password: { type: string }
+    responses:
+      200:
+        description: Tokens and user
+      401:
+        description: Invalid credentials
+    """
     try:
         body = LoginRequest.model_validate(request.get_json())
     except ValidationError as e:
@@ -70,7 +106,14 @@ def login():
 @auth_bp.route("/logout", methods=["POST"])
 @jwt_required()
 def logout():
-    """Invalidate current token."""
+    """Invalidate current token.
+    ---
+    tags: [auth]
+    security: [Bearer: []]
+    responses:
+      200:
+        description: Token invalidated
+    """
     jwt_data = get_jwt()
     jti = jwt_data.get("jti")
     auth_service.logout(jti)
@@ -79,7 +122,20 @@ def logout():
 
 @auth_bp.route("/password-reset", methods=["POST"])
 def password_reset_request():
-    """Request password reset (sends token if email exists; no leak)."""
+    """Request password reset (sends token if email exists; no leak).
+    ---
+    tags: [auth]
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          properties:
+            email: { type: string }
+    responses:
+      200:
+        description: If email exists, reset link sent
+    """
     body = request.get_json() or {}
     email = (body.get("email") or "").strip().lower()
     if not email:
@@ -89,7 +145,22 @@ def password_reset_request():
 
 @auth_bp.route("/password-reset/confirm", methods=["POST"])
 def password_reset_confirm():
-    """Confirm password reset with token and new password."""
+    """Confirm password reset with token and new password.
+    ---
+    tags: [auth]
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required: [token, new_password]
+          properties:
+            token: { type: string }
+            new_password: { type: string }
+    responses:
+      200:
+        description: Password updated
+    """
     body = request.get_json() or {}
     token = body.get("token")
     new_password = body.get("new_password")
@@ -106,7 +177,14 @@ def password_reset_confirm():
 @auth_bp.route("/me", methods=["GET"])
 @jwt_required()
 def me():
-    """Return current user from JWT (alias for GET /users/me)."""
+    """Return current user from JWT (alias for GET /users/me).
+    ---
+    tags: [auth]
+    security: [Bearer: []]
+    responses:
+      200:
+        description: Current user
+    """
     from services.user_service import get_by_id
     from schemas import UserResponse
     user_id = get_jwt_identity()

@@ -16,7 +16,14 @@ users_bp = Blueprint("users", __name__, url_prefix="/api/v1/users")
 @users_bp.route("/me", methods=["GET"])
 @jwt_required()
 def get_me():
-    """Get current user profile."""
+    """Get current user profile.
+    ---
+    tags: [users]
+    security: [Bearer: []]
+    responses:
+      200:
+        description: Current user profile
+    """
     user_id = int(get_jwt_identity())
     user = user_service.get_by_id(user_id)
     return success_response(data=UserResponse.model_validate(user).model_dump())
@@ -25,7 +32,23 @@ def get_me():
 @users_bp.route("/me", methods=["PUT"])
 @jwt_required()
 def update_me():
-    """Update current user profile."""
+    """Update current user profile.
+    ---
+    tags: [users]
+    security: [Bearer: []]
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          properties:
+            first_name: { type: string }
+            last_name: { type: string }
+            email: { type: string }
+    responses:
+      200:
+        description: Updated profile
+    """
     user_id = int(get_jwt_identity())
     try:
         data = UserUpdate.model_validate(request.get_json() or {})
@@ -44,7 +67,21 @@ def update_me():
 @jwt_required()
 @admin_required
 def list_users():
-    """List users (admin only); paginated."""
+    """List users (admin only); paginated.
+    ---
+    tags: [users]
+    security: [Bearer: []]
+    parameters:
+      - name: page
+        in: query
+        type: integer
+      - name: per_page
+        in: query
+        type: integer
+    responses:
+      200:
+        description: Paginated user list
+    """
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 20, type=int)
     result = user_service.get_all_paginated(page=page, per_page=per_page)
@@ -55,6 +92,18 @@ def list_users():
 @jwt_required()
 @admin_required
 def deactivate_user(user_id):
-    """Deactivate user (admin only)."""
+    """Deactivate user (admin only).
+    ---
+    tags: [users]
+    security: [Bearer: []]
+    parameters:
+      - name: user_id
+        in: path
+        type: integer
+        required: true
+    responses:
+      200:
+        description: User deactivated
+    """
     user_service.set_active(user_id, False)
     return success_response(data={"message": "User deactivated"})

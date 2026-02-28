@@ -9,7 +9,13 @@ info_bp = Blueprint("info", __name__)
 
 @info_bp.route("/", methods=["GET"])
 def root() -> tuple:
-    """Root: API name and version."""
+    """Root: API name and version.
+    ---
+    tags: [info]
+    responses:
+      200:
+        description: API name and version
+    """
     return success_response(
         data={"name": "E-Commerce API", "version": "1.0"},
         status=HTTPStatus.OK,
@@ -18,5 +24,11 @@ def root() -> tuple:
 
 @info_bp.route("/health", methods=["GET"])
 def health() -> tuple:
-    """Health check."""
+    """Health check.
+    ---
+    tags: [info]
+    responses:
+      200:
+        description: Service health status
+    """
     return success_response(data={"status": "ok"}, status=HTTPStatus.OK)

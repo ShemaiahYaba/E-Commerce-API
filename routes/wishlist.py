@@ -15,7 +15,14 @@ wishlist_bp = Blueprint("wishlist", __name__, url_prefix="/api/v1/wishlist")
 @wishlist_bp.route("", methods=["GET"])
 @jwt_required()
 def get_wishlist():
-    """Get current user wishlist (with product details)."""
+    """Get current user wishlist (with product details).
+    ---
+    tags: [wishlist]
+    security: [Bearer: []]
+    responses:
+      200:
+        description: Wishlist items
+    """
     user_id = int(get_jwt_identity())
     items = wishlist_service.get_wishlist(user_id)
     data = [
@@ -33,7 +40,22 @@ def get_wishlist():
 @wishlist_bp.route("", methods=["POST"])
 @jwt_required()
 def add_to_wishlist():
-    """Add product to wishlist (product_id in body)."""
+    """Add product to wishlist (product_id in body).
+    ---
+    tags: [wishlist]
+    security: [Bearer: []]
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required: [product_id]
+          properties:
+            product_id: { type: integer }
+    responses:
+      201:
+        description: Added to wishlist
+    """
     try:
         body = WishlistAdd.model_validate(request.get_json())
     except ValidationError as e:
@@ -54,7 +76,19 @@ def add_to_wishlist():
 @wishlist_bp.route("/<int:product_id>", methods=["DELETE"])
 @jwt_required()
 def remove_from_wishlist(product_id: int):
-    """Remove product from wishlist."""
+    """Remove product from wishlist.
+    ---
+    tags: [wishlist]
+    security: [Bearer: []]
+    parameters:
+      - name: product_id
+        in: path
+        type: integer
+        required: true
+    responses:
+      204:
+        description: Removed from wishlist
+    """
     user_id = int(get_jwt_identity())
     found = wishlist_service.remove(user_id, product_id)
     if not found:

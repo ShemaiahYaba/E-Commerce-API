@@ -32,6 +32,14 @@ def create_app(config_name: str | None = None) -> Flask:
     migrate.init_app(app, db)
     jwt = JWTManager(app)
 
+    @app.before_request
+    def normalize_authorization_header():
+        """Accept token with or without 'Bearer ' prefix (e.g. paste token only in Swagger)."""
+        from flask import request
+        auth = request.headers.get("Authorization")
+        if auth and not auth.strip().lower().startswith("bearer "):
+            request.environ["HTTP_AUTHORIZATION"] = f"Bearer {auth.strip()}"
+
     @jwt.token_in_blocklist_loader
     def check_if_revoked(jwt_header, jwt_payload):
         from services.auth_service import is_token_revoked
@@ -49,6 +57,8 @@ def create_app(config_name: str | None = None) -> Flask:
             "static_url_path": "/flasgger_static",
             "swagger_ui": True,
             "specs_route": "/docs",
+            # Avoid "None is not defined" in Swagger UI: template uses auth in JS (expects JSON, not Python None).
+            "auth": {},
         },
     )
 

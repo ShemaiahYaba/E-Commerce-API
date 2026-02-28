@@ -18,11 +18,13 @@ python -m venv venv
 # Windows: venv\Scripts\activate
 # Unix: source venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env   # optional; defaults work for dev
-flask db upgrade
-python scripts/seed.py  # optional seed data (admin@example.com / admin123)
-python run.py           # runs with Uvicorn by default
+cp .env.example .env   # optional; set FLASK_APP=run:app for flask commands
+flask db upgrade       # create DB tables (required before first run)
+python scripts/seed.py # optional seed data (admin@example.com / admin123)
+python run.py          # runs with Uvicorn by default
 ```
+
+**First-time setup:** If you see `no such table: users`, the database has no tables yet. Run `flask db upgrade` (with `FLASK_APP=run:app` in `.env` or in the shell), then start the app again.
 
 - API base: `http://localhost:5000/api/v1/`
 - Health: `GET /api/v1/health`

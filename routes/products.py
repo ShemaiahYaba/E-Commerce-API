@@ -22,7 +22,26 @@ def allowed_file(filename: str) -> bool:
 
 @products_bp.route("", methods=["GET"])
 def list_products():
-    """List products with search and filters (public). Query: q, category_id, min_price, max_price, min_rating, in_stock_only, page, per_page."""
+    """List products with search and filters (public).
+    ---
+    tags: [products]
+    parameters:
+      - name: q
+        in: query
+        type: string
+      - name: category_id
+        in: query
+        type: integer
+      - name: page
+        in: query
+        type: integer
+      - name: per_page
+        in: query
+        type: integer
+    responses:
+      200:
+        description: Paginated products
+    """
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 20, type=int)
     search = request.args.get("q", "").strip() or None
@@ -52,7 +71,20 @@ def list_products():
 
 @products_bp.route("/<int:product_id>", methods=["GET"])
 def get_product(product_id: int):
-    """Get product by id (public)."""
+    """Get product by id (public).
+    ---
+    tags: [products]
+    parameters:
+      - name: product_id
+        in: path
+        type: integer
+        required: true
+    responses:
+      200:
+        description: Product
+      404:
+        description: Not found
+    """
     try:
         p = product_service.get_by_id(product_id)
     except Exception as e:
@@ -66,7 +98,27 @@ def get_product(product_id: int):
 @jwt_required()
 @admin_required
 def create_product():
-    """Create product (admin)."""
+    """Create product (admin).
+    ---
+    tags: [products]
+    security: [Bearer: []]
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required: [name, price, sku, category_id]
+          properties:
+            name: { type: string }
+            description: { type: string }
+            price: { type: number }
+            stock: { type: integer }
+            sku: { type: string }
+            category_id: { type: integer }
+    responses:
+      201:
+        description: Product created
+    """
     try:
         data = ProductCreate.model_validate(request.get_json())
     except ValidationError as e:
@@ -87,7 +139,28 @@ def create_product():
 @jwt_required()
 @admin_required
 def update_product(product_id: int):
-    """Update product (admin)."""
+    """Update product (admin).
+    ---
+    tags: [products]
+    security: [Bearer: []]
+    parameters:
+      - name: product_id
+        in: path
+        type: integer
+        required: true
+      - in: body
+        name: body
+        schema:
+          type: object
+          properties:
+            name: { type: string }
+            price: { type: number }
+            stock: { type: integer }
+            sku: { type: string }
+    responses:
+      200:
+        description: Product updated
+    """
     try:
         data = ProductUpdate.model_validate(request.get_json() or {})
     except ValidationError as e:
@@ -105,7 +178,19 @@ def update_product(product_id: int):
 @jwt_required()
 @admin_required
 def delete_product(product_id: int):
-    """Delete product (admin)."""
+    """Delete product (admin).
+    ---
+    tags: [products]
+    security: [Bearer: []]
+    parameters:
+      - name: product_id
+        in: path
+        type: integer
+        required: true
+    responses:
+      204:
+        description: Product deleted
+    """
     try:
         product_service.delete(product_id)
     except Exception as e:
@@ -119,7 +204,26 @@ def delete_product(product_id: int):
 @jwt_required()
 @admin_required
 def add_product_image(product_id: int):
-    """Upload or add product image (admin). JSON body: { url, sort_order } or multipart file."""
+    """Upload or add product image (admin).
+    ---
+    tags: [products]
+    security: [Bearer: []]
+    parameters:
+      - name: product_id
+        in: path
+        type: integer
+        required: true
+      - in: body
+        name: body
+        schema:
+          type: object
+          properties:
+            url: { type: string }
+            sort_order: { type: integer }
+    responses:
+      201:
+        description: Image added
+    """
     if request.is_json:
         try:
             data = ProductImageCreate.model_validate(request.get_json())

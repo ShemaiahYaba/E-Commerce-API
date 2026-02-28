@@ -37,7 +37,16 @@ def _order_to_dict(order) -> dict:
 @orders_bp.route("", methods=["POST"])
 @jwt_required()
 def create_order():
-    """Create order from current user cart."""
+    """Create order from current user cart.
+    ---
+    tags: [orders]
+    security: [Bearer: []]
+    responses:
+      201:
+        description: Order created from cart
+      400:
+        description: Cart empty or insufficient stock
+    """
     user_id = int(get_jwt_identity())
     try:
         order = order_service.create_order(user_id)
@@ -51,7 +60,21 @@ def create_order():
 @orders_bp.route("", methods=["GET"])
 @jwt_required()
 def list_orders():
-    """List current user orders."""
+    """List current user orders.
+    ---
+    tags: [orders]
+    security: [Bearer: []]
+    parameters:
+      - name: page
+        in: query
+        type: integer
+      - name: per_page
+        in: query
+        type: integer
+    responses:
+      200:
+        description: Paginated orders
+    """
     user_id = int(get_jwt_identity())
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 20, type=int)
@@ -68,7 +91,19 @@ def list_orders():
 @orders_bp.route("/<int:order_id>", methods=["GET"])
 @jwt_required()
 def get_order(order_id: int):
-    """Get order by id (owner only)."""
+    """Get order by id (owner only).
+    ---
+    tags: [orders]
+    security: [Bearer: []]
+    parameters:
+      - name: order_id
+        in: path
+        type: integer
+        required: true
+    responses:
+      200:
+        description: Order details
+    """
     user_id = int(get_jwt_identity())
     try:
         order = order_service.get_by_id(order_id, user_id=user_id)
@@ -83,7 +118,26 @@ def get_order(order_id: int):
 @jwt_required()
 @admin_required
 def update_order_status(order_id: int):
-    """Admin: update order status."""
+    """Admin: update order status.
+    ---
+    tags: [orders]
+    security: [Bearer: []]
+    parameters:
+      - name: order_id
+        in: path
+        type: integer
+        required: true
+      - in: body
+        name: body
+        schema:
+          type: object
+          required: [status]
+          properties:
+            status: { type: string }
+    responses:
+      200:
+        description: Order status updated
+    """
     try:
         body = OrderStatusUpdate.model_validate(request.get_json())
     except Exception as e:

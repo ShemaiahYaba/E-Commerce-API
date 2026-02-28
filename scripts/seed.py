@@ -13,12 +13,21 @@ def seed() -> None:
     from database import db
     from models import User, Category
     from utils.security import hash_password
+    from sqlalchemy.exc import OperationalError
 
     app = create_app("development")
     with app.app_context():
-        if Category.query.first() is not None:
-            print("Already seeded; skip.")
-            return
+        try:
+            if Category.query.first() is not None:
+                print("Already seeded; skip.")
+                return
+        except OperationalError as e:
+            if "no such table" in str(e).lower():
+                print("Database tables are missing. Run migrations first:")
+                print("  flask db upgrade")
+                print("Then run this script again.")
+                sys.exit(1)
+            raise
         c1 = Category(name="Electronics")
         c2 = Category(name="Clothing")
         db.session.add_all([c1, c2])

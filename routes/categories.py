@@ -15,7 +15,13 @@ categories_bp = Blueprint("categories", __name__, url_prefix="/api/v1/categories
 
 @categories_bp.route("", methods=["GET"])
 def list_categories():
-    """List all categories (public)."""
+    """List all categories (public).
+    ---
+    tags: [categories]
+    responses:
+      200:
+        description: List of categories
+    """
     items = category_service.get_all()
     return success_response(
         data=[CategoryResponse.model_validate(c).model_dump() for c in items]
@@ -24,7 +30,20 @@ def list_categories():
 
 @categories_bp.route("/<int:category_id>", methods=["GET"])
 def get_category(category_id: int):
-    """Get category by id (public)."""
+    """Get category by id (public).
+    ---
+    tags: [categories]
+    parameters:
+      - name: category_id
+        in: path
+        type: integer
+        required: true
+    responses:
+      200:
+        description: Category
+      404:
+        description: Not found
+    """
     try:
         cat = category_service.get_by_id(category_id)
     except Exception as e:
@@ -38,7 +57,23 @@ def get_category(category_id: int):
 @jwt_required()
 @admin_required
 def create_category():
-    """Create category (admin)."""
+    """Create category (admin).
+    ---
+    tags: [categories]
+    security: [Bearer: []]
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required: [name]
+          properties:
+            name: { type: string }
+            parent_id: { type: integer }
+    responses:
+      201:
+        description: Category created
+    """
     try:
         data = CategoryCreate.model_validate(request.get_json())
     except ValidationError as e:
@@ -59,7 +94,26 @@ def create_category():
 @jwt_required()
 @admin_required
 def update_category(category_id: int):
-    """Update category (admin)."""
+    """Update category (admin).
+    ---
+    tags: [categories]
+    security: [Bearer: []]
+    parameters:
+      - name: category_id
+        in: path
+        type: integer
+        required: true
+      - in: body
+        name: body
+        schema:
+          type: object
+          properties:
+            name: { type: string }
+            parent_id: { type: integer }
+    responses:
+      200:
+        description: Category updated
+    """
     try:
         data = CategoryUpdate.model_validate(request.get_json() or {})
     except ValidationError as e:
@@ -77,7 +131,19 @@ def update_category(category_id: int):
 @jwt_required()
 @admin_required
 def delete_category(category_id: int):
-    """Delete category (admin)."""
+    """Delete category (admin).
+    ---
+    tags: [categories]
+    security: [Bearer: []]
+    parameters:
+      - name: category_id
+        in: path
+        type: integer
+        required: true
+    responses:
+      204:
+        description: Category deleted
+    """
     try:
         category_service.delete(category_id)
     except Exception as e:

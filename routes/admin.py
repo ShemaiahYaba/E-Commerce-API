@@ -18,7 +18,14 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/api/v1/admin")
 @jwt_required()
 @admin_required
 def dashboard_stats():
-    """Dashboard: total users, orders, revenue, popular products."""
+    """Dashboard: total users, orders, revenue, popular products.
+    ---
+    tags: [admin]
+    security: [Bearer: []]
+    responses:
+      200:
+        description: Dashboard statistics
+    """
     total_users = User.query.count()
     total_orders = Order.query.count()
     revenue = db.session.query(func.coalesce(func.sum(Order.total), 0)).scalar() or 0
@@ -45,7 +52,18 @@ def dashboard_stats():
 @jwt_required()
 @admin_required
 def inventory():
-    """Inventory: stock levels; low_stock threshold query param (default 5)."""
+    """Inventory: stock levels; low_stock threshold query param (default 5).
+    ---
+    tags: [admin]
+    security: [Bearer: []]
+    parameters:
+      - name: low_stock_threshold
+        in: query
+        type: integer
+    responses:
+      200:
+        description: Products and low-stock list
+    """
     threshold = request.args.get("low_stock_threshold", 5, type=int)
     products = Product.query.order_by(Product.stock.asc()).all()
     low_stock = [p for p in products if p.stock < threshold]
@@ -67,7 +85,21 @@ def inventory():
 @jwt_required()
 @admin_required
 def list_all_orders():
-    """Admin: list all orders (paginated)."""
+    """Admin: list all orders (paginated).
+    ---
+    tags: [admin]
+    security: [Bearer: []]
+    parameters:
+      - name: page
+        in: query
+        type: integer
+      - name: per_page
+        in: query
+        type: integer
+    responses:
+      200:
+        description: Paginated orders
+    """
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 20, type=int)
     result = order_service.get_all_orders_admin(page=page, per_page=per_page)

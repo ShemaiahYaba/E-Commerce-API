@@ -20,7 +20,7 @@ if __name__ == "__main__":
         import uvicorn
         uvicorn.run(
             "run:asgi_app",
-            host="0.0.0.0",
+            host="localhost",
             port=port,
             reload=os.getenv("FLASK_ENV") == "development",
         )
