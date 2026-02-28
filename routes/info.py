@@ -31,4 +31,18 @@ def health() -> tuple:
       200:
         description: Service health status
     """
-    return success_response(data={"status": "ok"}, status=HTTPStatus.OK)
+    db_ok = True
+    try:
+        from database import db
+        from sqlalchemy import text
+        db.session.execute(text('SELECT 1'))
+    except Exception:
+        db_ok = False
+
+    from datetime import datetime
+    return success_response(data={
+        "status": "ok",
+        "db_ok": db_ok,
+        "version": "1.0",
+        "timestamp": datetime.utcnow().isoformat()
+    }, status=HTTPStatus.OK)

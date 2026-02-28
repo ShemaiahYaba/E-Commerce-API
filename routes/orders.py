@@ -149,3 +149,41 @@ def update_order_status(order_id: int):
             return error_response(e.message, e.status_code)
         raise
     return success_response(data=_order_to_dict(order))
+
+
+@orders_bp.route("/payment-intent", methods=["POST"])
+@jwt_required()
+def create_payment_intent():
+    """Create a simulated Stripe payment intent from current cart.
+    ---
+    tags: [orders]
+    security: [Bearer: []]
+    responses:
+      200:
+        description: Payment intent created
+      400:
+        description: Cart empty
+    """
+    user_id = int(get_jwt_identity())
+    from services import cart_service
+    import uuid
+
+    try:
+        cart = cart_service.get_user_cart(user_id)
+        if not cart.cart_items:
+            return error_response("Cart is empty", HTTPStatus.BAD_REQUEST)
+        
+        # In a real app, this is where we call stripe.PaymentIntent.create
+        total = sum((item.product.price * item.quantity for item in cart.cart_items), 0)
+        
+        intent_id = f"pi_sim_{uuid.uuid4().hex[:16]}"
+        
+        return success_response(data={
+            "payment_intent_id": intent_id,
+            "amount": float(total),
+            "currency": "usd"
+        })
+    except Exception as e:
+        if hasattr(e, "status_code"):
+            return error_response(e.message, e.status_code)
+        raise

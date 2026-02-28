@@ -279,3 +279,231 @@ def admin_update_stock(product_id):
     except Exception as e:
         flash(getattr(e, "message", "Could not update stock."), "error")
     return redirect(url_for("web_admin.admin_inventory"))
+
+
+# ──────────────────────────────────────────────
+# Product Management
+# ──────────────────────────────────────────────
+
+@admin_web_bp.route("/products")
+def admin_products():
+    guard = require_admin()
+    if guard:
+        return guard
+
+    search = request.args.get("q", "").strip()
+    category_id = request.args.get("category_id", type=int)
+    page = request.args.get("page", 1, type=int)
+
+    from services import product_service, category_service
+    try:
+        result = product_service.get_all_paginated(
+            page=page, per_page=20, search=search or None, category_id=category_id
+        )
+        products = result["products"]
+        total = result["total"]
+        pages = result["pages"]
+        categories = category_service.get_all()
+    except Exception:
+        flash("Error loading products.", "error")
+        products, total, pages, categories = [], 0, 1, []
+
+    return render_template(
+        "admin/products.html",
+        products=products,
+        total=total,
+        page=page,
+        pages=pages,
+        categories=categories,
+        current_category=category_id,
+        search_query=search,
+    )
+
+
+@admin_web_bp.route("/products/new", methods=["GET", "POST"])
+def admin_product_new():
+    guard = require_admin()
+    if guard:
+        return guard
+
+    from services import product_service, category_service
+    from schemas import ProductCreate
+    from pydantic import ValidationError
+
+    if request.method == "GET":
+        try:
+            categories = category_service.get_all()
+        except Exception:
+            categories = []
+            flash("Could not load categories.", "error")
+        return render_template("admin/product_form.html", product=None, categories=categories)
+
+    try:
+        data = ProductCreate.model_validate({
+            "name": request.form.get("name"),
+            "description": request.form.get("description"),
+            "price": request.form.get("price"),
+            "stock": request.form.get("stock"),
+            "sku": request.form.get("sku"),
+            "category_id": request.form.get("category_id"),
+            "is_active": request.form.get("is_active") == "1",
+        })
+        product_service.create(data)
+        flash("Product created successfully.", "success")
+        return redirect(url_for("web_admin.admin_products"))
+    except ValidationError as exc:
+        msg = "; ".join(f"{e['loc'][0]}: {e['msg']}" for e in exc.errors() if e.get("loc"))
+        flash(msg or "Validation failed.", "error")
+    except Exception as e:
+        flash(getattr(e, "message", "Could not create product."), "error")
+
+    # Get categories so we can re-render form
+    try:
+        categories = category_service.get_all()
+    except Exception:
+        categories = []
+    # pass form data back
+    return render_template("admin/product_form.html", product=None, categories=categories, form_data=request.form)
+
+
+@admin_web_bp.route("/products/<int:product_id>/edit", methods=["GET", "POST"])
+def admin_product_edit(product_id: int):
+    guard = require_admin()
+    if guard:
+        return guard
+
+    from services import product_service, category_service
+    from schemas import ProductUpdate
+    from pydantic import ValidationError
+
+    try:
+        product = product_service.get_by_id(product_id)
+        categories = category_service.get_all()
+    except Exception:
+        flash("Could not load product or categories.", "error")
+        return redirect(url_for("web_admin.admin_products"))
+
+    if request.method == "GET":
+        return render_template("admin/product_form.html", product=product, categories=categories)
+
+    try:
+        update_data = {
+            "name": request.form.get("name"),
+            "description": request.form.get("description"),
+            "price": request.form.get("price") or None,
+            "stock": request.form.get("stock") or None,
+            "sku": request.form.get("sku"),
+            "category_id": request.form.get("category_id") or None,
+            "is_active": request.form.get("is_active") == "1",
+        }
+        update_data = {k: v for k, v in update_data.items() if v is not None}
+        
+        data = ProductUpdate.model_validate(update_data)
+        product_service.update(product_id, data)
+        flash("Product updated successfully.", "success")
+        return redirect(url_for("web_admin.admin_products"))
+    except ValidationError as exc:
+        msg = "; ".join(f"{e['loc'][0]}: {e['msg']}" for e in exc.errors() if e.get("loc"))
+        flash(msg or "Validation failed.", "error")
+    except Exception as e:
+        flash(getattr(e, "message", "Could not update product."), "error")
+
+    return render_template("admin/product_form.html", product=product, categories=categories)
+
+
+@admin_web_bp.route("/products/<int:product_id>/delete", methods=["POST"])
+def admin_product_delete(product_id: int):
+    guard = require_admin()
+    if guard:
+        return guard
+    from services import product_service
+    try:
+        product_service.delete(product_id)
+        flash("Product deleted.", "success")
+    except Exception as e:
+        flash(getattr(e, "message", "Could not delete product."), "error")
+    return redirect(url_for("web_admin.admin_products"))
+
+
+@admin_web_bp.route("/products/<int:product_id>/image", methods=["POST"])
+def admin_product_image(product_id: int):
+    guard = require_admin()
+    if guard:
+        return guard
+    from services import product_service
+    
+    # In a real app we'd save the file to S3/disk. Here we just take the URL.
+    image_url = request.form.get("image_url", "").strip()
+    if not image_url:
+        flash("Image URL is required.", "error")
+        return redirect(url_for("web_admin.admin_product_edit", product_id=product_id))
+
+    try:
+        product_service.add_image(product_id, image_url)
+        flash("Image added successfully.", "success")
+    except Exception as e:
+        flash(getattr(e, "message", "Could not add image."), "error")
+
+    return redirect(url_for("web_admin.admin_product_edit", product_id=product_id))
+
+
+# ──────────────────────────────────────────────
+# Category Management
+# ──────────────────────────────────────────────
+
+@admin_web_bp.route("/categories")
+def admin_categories():
+    guard = require_admin()
+    if guard:
+        return guard
+    from services import category_service
+    try:
+        categories = category_service.get_all()
+    except Exception:
+        flash("Error loading categories.", "error")
+        categories = []
+
+    return render_template("admin/categories.html", categories=categories)
+
+
+@admin_web_bp.route("/categories/new", methods=["POST"])
+def admin_category_new():
+    guard = require_admin()
+    if guard:
+        return guard
+    from services import category_service
+    from schemas import CategoryCreate
+    from pydantic import ValidationError
+
+    name = request.form.get("name", "").strip()
+    parent_id = request.form.get("parent_id")
+    if parent_id == "":
+        parent_id = None
+    elif parent_id is not None:
+        parent_id = int(parent_id)
+
+    try:
+        data = CategoryCreate(name=name, parent_id=parent_id)
+        category_service.create(data)
+        flash("Category created.", "success")
+    except ValidationError as exc:
+        msg = "; ".join(f"{e['loc'][0]}: {e['msg']}" for e in exc.errors() if e.get("loc"))
+        flash(msg or "Validation failed.", "error")
+    except Exception as e:
+        flash(getattr(e, "message", "Could not create category."), "error")
+
+    return redirect(url_for("web_admin.admin_categories"))
+
+
+@admin_web_bp.route("/categories/<int:category_id>/delete", methods=["POST"])
+def admin_category_delete(category_id: int):
+    guard = require_admin()
+    if guard:
+        return guard
+    from services import category_service
+    try:
+        category_service.delete(category_id)
+        flash("Category deleted.", "success")
+    except Exception as e:
+        flash(getattr(e, "message", "Could not delete category."), "error")
+    return redirect(url_for("web_admin.admin_categories"))
