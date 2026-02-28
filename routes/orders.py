@@ -169,12 +169,12 @@ def create_payment_intent():
     import uuid
 
     try:
-        cart = cart_service.get_user_cart(user_id)
-        if not cart.cart_items:
+        cart = cart_service.get_cart(user_id)
+        if not cart["items"]:
             return error_response("Cart is empty", HTTPStatus.BAD_REQUEST)
         
         # In a real app, this is where we call stripe.PaymentIntent.create
-        total = sum((item.product.price * item.quantity for item in cart.cart_items), 0)
+        total = cart["total"]
         
         intent_id = f"pi_sim_{uuid.uuid4().hex[:16]}"
         
