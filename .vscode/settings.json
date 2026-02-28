@@ -1,0 +1,13 @@
+{
+  // Disable VS Code's CSS linter inside HTML files — it cannot parse
+  // Jinja2 template expressions ({{ }}, {% %}) and reports false errors.
+  "css.validate": false,
+  "less.validate": false,
+  "scss.validate": false,
+
+  // Keep HTML formatting but prevent it from mangling Jinja template tags
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features",
+    "editor.formatOnSave": false
+  }
+}

@@ -1,0 +1,137 @@
+{% extends "base.html" %} {% block title %}Order #{{ order.id }} — ShopAPI
+Demo{% endblock %} {% block content %}
+
+<!-- Breadcrumb -->
+<nav class="flex items-center gap-2 text-sm text-slate-400 mb-6">
+  <a href="/web/orders" class="hover:text-indigo-500 transition-colors"
+    >Orders</a
+  >
+  <svg
+    class="w-3.5 h-3.5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      d="M9 5l7 7-7 7"
+    />
+  </svg>
+  <span class="text-slate-600 font-medium">Order #{{ order.id }}</span>
+</nav>
+
+{% set status_colors = { 'pending': 'bg-amber-50 text-amber-700
+border-amber-200', 'processing': 'bg-blue-50 text-blue-700 border-blue-200',
+'shipped': 'bg-indigo-50 text-indigo-700 border-indigo-200', 'delivered':
+'bg-emerald-50 text-emerald-700 border-emerald-200', 'cancelled': 'bg-red-50
+text-red-600 border-red-200' } %}
+
+<!-- Order Header -->
+<div class="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800 mb-1">
+        Order #{{ order.id }}
+      </h1>
+      <p class="text-sm text-slate-400">
+        Placed {{ order.created_at.strftime('%B %d, %Y at %I:%M %p') if
+        order.created_at else 'Unknown' }}
+      </p>
+    </div>
+    <span
+      class="px-4 py-2 rounded-xl text-sm font-semibold border
+      {{ status_colors.get(order.status, 'bg-slate-50 text-slate-600 border-slate-200') }}"
+    >
+      {{ order.status|capitalize }}
+    </span>
+  </div>
+
+  {% if order.payment_intent_id %}
+  <div class="mt-4 pt-4 border-t border-slate-100">
+    <div class="text-xs text-slate-400 font-medium mb-0.5">
+      Payment Reference
+    </div>
+    <code class="text-xs font-mono text-slate-600"
+      >{{ order.payment_intent_id }}</code
+    >
+  </div>
+  {% endif %}
+</div>
+
+<!-- Order Items -->
+<div class="bg-white rounded-2xl border border-slate-200 mb-6 overflow-hidden">
+  <div class="px-6 py-4 border-b border-slate-100">
+    <h2 class="font-bold text-slate-800">
+      Items ({{ order.items|length if order.items else 0 }})
+    </h2>
+  </div>
+
+  <div class="divide-y divide-slate-100">
+    {% for item in order.items %}
+    <div class="px-6 py-4 flex items-center gap-4">
+      <div
+        class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+        style="background: linear-gradient(135deg, #eef2ff, #c7d2fe)"
+      >
+        <svg
+          class="w-5 h-5 text-indigo-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+          />
+        </svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="font-medium text-slate-800">
+          {{ item.product.name if item.product else 'Product #' +
+          item.product_id|string }}
+        </div>
+        <div class="text-sm text-slate-400">
+          × {{ item.quantity }} @ ${{ "%.2f"|format(item.price) }} each
+        </div>
+      </div>
+      <div class="font-bold text-slate-800">
+        ${{ "%.2f"|format(item.price * item.quantity) }}
+      </div>
+    </div>
+    {% else %}
+    <div class="px-6 py-4 text-sm text-slate-400">No items recorded.</div>
+    {% endfor %}
+  </div>
+
+  <!-- Total -->
+  <div
+    class="px-6 py-4 border-t border-slate-100 flex justify-between items-center bg-slate-50"
+  >
+    <span class="font-bold text-slate-700">Total</span>
+    <span class="text-2xl font-extrabold gradient-text"
+      >${{ "%.2f"|format(order.total) }}</span
+    >
+  </div>
+</div>
+
+<!-- Back Link -->
+<a
+  href="/web/orders"
+  class="inline-flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+>
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      d="M15 19l-7-7 7-7"
+    />
+  </svg>
+  Back to Orders
+</a>
+
+{% endblock %}

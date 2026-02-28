@@ -1,5 +1,5 @@
-"""Root shim: re-exports from errors.exceptions for backwards compatibility."""
-from errors.exceptions import (  # noqa: F401
+# errors package — re-exports for backwards compatibility
+from errors.exceptions import (
     AppException,
     DuplicateEmailError,
     InvalidCredentialsError,
@@ -12,6 +12,7 @@ from errors.exceptions import (  # noqa: F401
     DatabaseError,
     RateLimitError,
 )
+from errors.handlers import register_error_handlers
 
 __all__ = [
     "AppException",
@@ -25,4 +26,5 @@ __all__ = [
     "ValidationError",
     "DatabaseError",
     "RateLimitError",
+    "register_error_handlers",
 ]

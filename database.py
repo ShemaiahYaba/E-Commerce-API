@@ -1,7 +1,4 @@
-"""Flask-SQLAlchemy and Flask-Migrate setup."""
+"""Root shim: re-exports from config.database for backwards compatibility."""
+from config.database import db, migrate  # noqa: F401
 
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-
-db = SQLAlchemy()
-migrate = Migrate()
+__all__ = ["db", "migrate"]

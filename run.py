@@ -20,9 +20,9 @@ if __name__ == "__main__":
         import uvicorn
         uvicorn.run(
             "run:asgi_app",
-            host="localhost",
+            host="127.0.0.1",   # explicit IPv4 — avoids Windows resolving localhost → ::1
             port=port,
-            reload=os.getenv("FLASK_ENV") == "development",
+            reload=False,       # reload=True breaks WsgiToAsgi thread executor
         )
     else:
-        app.run(host="0.0.0.0", port=port, debug=app.config.get("DEBUG", False))
+        app.run(host="127.0.0.1", port=port, debug=app.config.get("DEBUG", False))

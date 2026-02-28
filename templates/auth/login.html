@@ -1,48 +1,103 @@
-{% extends "base.html" %}
-{% block title %}Login - E-Commerce API{% endblock %}
-
-{% block content %}
-<div class="max-w-md mx-auto">
-  <div class="bg-white shadow rounded-lg p-8">
-    <h1 class="text-2xl font-bold mb-6 text-center">Login</h1>
-
-    <form method="POST" action="/web/login">
-      <div class="mb-4">
-        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          required
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="you@example.com"
-        >
-      </div>
-
-      <div class="mb-6">
-        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          required
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="••••••••"
-        >
-      </div>
-
-      <button
-        type="submit"
-        class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+{% extends "base.html" %} {% block title %}Login — ShopAPI Demo{% endblock %} {%
+block content %}
+<div class="min-h-[60vh] flex items-center justify-center">
+  <div class="w-full max-w-md">
+    <!-- Card -->
+    <div
+      class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden"
+    >
+      <!-- Header banner -->
+      <div
+        class="px-8 pt-8 pb-6 text-center"
+        style="background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%)"
       >
-        Login
-      </button>
-    </form>
+        <div
+          class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md"
+          style="background: linear-gradient(135deg, #6366f1, #8b5cf6)"
+        >
+          <svg
+            class="w-7 h-7 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            />
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-800">Welcome back</h1>
+        <p class="text-sm text-slate-500 mt-1">
+          Sign in to your ShopAPI account
+        </p>
+      </div>
 
-    <p class="mt-6 text-center text-sm text-gray-600">
-      Don't have an account?
-      <a href="/web/register" class="text-blue-600 hover:underline">Register here</a>
-    </p>
+      <!-- Form -->
+      <form method="POST" action="/web/login" class="px-8 py-7 space-y-5">
+        <div>
+          <label
+            for="email"
+            class="block text-sm font-semibold text-slate-700 mb-1.5"
+            >Email address</label
+          >
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            autocomplete="email"
+            placeholder="you@example.com"
+            class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition placeholder-slate-300"
+          />
+        </div>
+
+        <div>
+          <label
+            for="password"
+            class="block text-sm font-semibold text-slate-700 mb-1.5"
+            >Password</label
+          >
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            autocomplete="current-password"
+            placeholder="••••••••"
+            class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition placeholder-slate-300"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="btn-primary w-full text-white font-bold py-3.5 rounded-xl shadow-md text-sm"
+        >
+          Sign In
+        </button>
+      </form>
+
+      <!-- Footer -->
+      <div class="px-8 pb-7 text-center text-sm text-slate-500">
+        No account yet?
+        <a
+          href="/web/register"
+          class="text-indigo-600 font-semibold hover:text-indigo-800 transition-colors ml-1"
+          >Create one</a
+        >
+      </div>
+    </div>
+
+    <!-- Demo hint -->
+    <div
+      class="mt-5 bg-indigo-50 rounded-2xl px-5 py-4 border border-indigo-100 text-sm text-indigo-700"
+    >
+      <strong class="font-semibold">Demo Admin:</strong>
+      <span class="font-mono ml-1">admin@example.com</span> /
+      <span class="font-mono">admin123</span>
+    </div>
   </div>
 </div>
 {% endblock %}

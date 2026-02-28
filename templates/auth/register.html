@@ -1,74 +1,128 @@
-{% extends "base.html" %}
-{% block title %}Register - E-Commerce API{% endblock %}
-
-{% block content %}
-<div class="max-w-md mx-auto">
-  <div class="bg-white shadow rounded-lg p-8">
-    <h1 class="text-2xl font-bold mb-6 text-center">Create Account</h1>
-
-    <form method="POST" action="/web/register">
-      <div class="mb-4">
-        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          required
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="you@example.com"
-        >
-      </div>
-
-      <div class="mb-4">
-        <label for="first_name" class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-        <input
-          type="text"
-          id="first_name"
-          name="first_name"
-          required
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="John"
-        >
-      </div>
-
-      <div class="mb-4">
-        <label for="last_name" class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-        <input
-          type="text"
-          id="last_name"
-          name="last_name"
-          required
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Doe"
-        >
-      </div>
-
-      <div class="mb-6">
-        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          required
-          minlength="8"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="••••••••"
-        >
-        <p class="mt-1 text-xs text-gray-500">Minimum 8 characters, include a number</p>
-      </div>
-
-      <button
-        type="submit"
-        class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+{% extends "base.html" %} {% block title %}Create Account — ShopAPI Demo{%
+endblock %} {% block content %}
+<div class="min-h-[60vh] flex items-center justify-center">
+  <div class="w-full max-w-md">
+    <div
+      class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden"
+    >
+      <!-- Header banner -->
+      <div
+        class="px-8 pt-8 pb-6 text-center"
+        style="background: linear-gradient(135deg, #ecfeff 0%, #f0fdf4 100%)"
       >
-        Create Account
-      </button>
-    </form>
+        <div
+          class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md"
+          style="background: linear-gradient(135deg, #06b6d4, #10b981)"
+        >
+          <svg
+            class="w-7 h-7 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+            />
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-800">Create your account</h1>
+        <p class="text-sm text-slate-500 mt-1">Join ShopAPI in seconds</p>
+      </div>
 
-    <p class="mt-6 text-center text-sm text-gray-600">
-      Already have an account?
-      <a href="/web/login" class="text-blue-600 hover:underline">Login here</a>
-    </p>
+      <!-- Form -->
+      <form method="POST" action="/web/register" class="px-8 py-7 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label
+              for="first_name"
+              class="block text-sm font-semibold text-slate-700 mb-1.5"
+              >First name</label
+            >
+            <input
+              type="text"
+              id="first_name"
+              name="first_name"
+              required
+              autocomplete="given-name"
+              placeholder="John"
+              class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition placeholder-slate-300"
+            />
+          </div>
+          <div>
+            <label
+              for="last_name"
+              class="block text-sm font-semibold text-slate-700 mb-1.5"
+              >Last name</label
+            >
+            <input
+              type="text"
+              id="last_name"
+              name="last_name"
+              required
+              autocomplete="family-name"
+              placeholder="Doe"
+              class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition placeholder-slate-300"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label
+            for="email"
+            class="block text-sm font-semibold text-slate-700 mb-1.5"
+            >Email address</label
+          >
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            autocomplete="email"
+            placeholder="you@example.com"
+            class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition placeholder-slate-300"
+          />
+        </div>
+
+        <div>
+          <label
+            for="password"
+            class="block text-sm font-semibold text-slate-700 mb-1.5"
+            >Password</label
+          >
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            minlength="8"
+            autocomplete="new-password"
+            placeholder="••••••••"
+            class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition placeholder-slate-300"
+          />
+          <p class="text-xs text-slate-400 mt-1.5">Minimum 8 characters</p>
+        </div>
+
+        <button
+          type="submit"
+          class="w-full text-white font-bold py-3.5 rounded-xl shadow-md text-sm mt-2"
+          style="background: linear-gradient(135deg, #06b6d4, #10b981)"
+        >
+          Create Account
+        </button>
+      </form>
+
+      <div class="px-8 pb-7 text-center text-sm text-slate-500">
+        Already have an account?
+        <a
+          href="/web/login"
+          class="text-indigo-600 font-semibold hover:text-indigo-800 transition-colors ml-1"
+          >Sign in</a
+        >
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

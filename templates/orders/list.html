@@ -1,0 +1,154 @@
+{% extends "base.html" %} {% block title %}My Orders — ShopAPI Demo{% endblock
+%} {% block content %}
+
+<div class="mb-6">
+  <h1 class="text-3xl font-bold text-slate-800">My Orders</h1>
+  <p class="text-slate-500 mt-1">
+    {{ total }} order{% if total != 1 %}s{% endif %} total
+  </p>
+</div>
+
+{% if orders %}
+<div class="space-y-4 mb-8">
+  {% for order in orders %} {% set status_colors = { 'pending': 'bg-amber-50
+  text-amber-700 border-amber-200', 'processing': 'bg-blue-50 text-blue-700
+  border-blue-200', 'shipped': 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  'delivered': 'bg-emerald-50 text-emerald-700 border-emerald-200', 'cancelled':
+  'bg-red-50 text-red-600 border-red-200' } %}
+  <a
+    href="/web/orders/{{ order.id }}"
+    class="card-hover block bg-white rounded-2xl border border-slate-200 p-5 no-underline"
+  >
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div
+          class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+          style="background: linear-gradient(135deg, #eef2ff, #c7d2fe)"
+        >
+          <svg
+            class="w-6 h-6 text-indigo-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            />
+          </svg>
+        </div>
+        <div>
+          <div class="font-bold text-slate-800">Order #{{ order.id }}</div>
+          <div class="text-sm text-slate-400 mt-0.5">
+            {{ order.created_at.strftime('%b %d, %Y') if order.created_at else
+            'Unknown date' }} · {{ order.items|length if order.items else 0 }}
+            item{% if order.items|length != 1 %}s{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <span class="text-lg font-bold text-slate-800"
+          >${{ "%.2f"|format(order.total) }}</span
+        >
+        <span
+          class="px-3 py-1 rounded-full text-xs font-semibold border
+              {{ status_colors.get(order.status, 'bg-slate-50 text-slate-600 border-slate-200') }}"
+        >
+          {{ order.status|capitalize }}
+        </span>
+        <svg
+          class="w-5 h-5 text-slate-300"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 5l7 7-7 7"
+          />
+        </svg>
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if pages > 1 %}
+<div class="flex items-center justify-center gap-2">
+  {% if page > 1 %}
+  <a
+    href="?page={{ page - 1 }}"
+    class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition flex items-center gap-1"
+  >
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M15 19l-7-7 7-7"
+      />
+    </svg>
+    Prev
+  </a>
+  {% endif %}
+  <span
+    class="px-4 py-2 rounded-xl text-sm font-semibold text-white shadow-sm"
+    style="background: linear-gradient(135deg, #6366f1, #8b5cf6)"
+  >
+    {{ page }} / {{ pages }}
+  </span>
+  {% if page < pages %}
+  <a
+    href="?page={{ page + 1 }}"
+    class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition flex items-center gap-1"
+  >
+    Next
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M9 5l7 7-7 7"
+      />
+    </svg>
+  </a>
+  {% endif %}
+</div>
+{% endif %} {% else %}
+<div class="bg-white rounded-2xl border border-slate-200 p-16 text-center">
+  <div
+    class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+    style="background: linear-gradient(135deg, #eef2ff, #c7d2fe)"
+  >
+    <svg
+      class="w-8 h-8 text-indigo-400"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="1.5"
+        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+      />
+    </svg>
+  </div>
+  <h2 class="text-lg font-semibold text-slate-700 mb-2">No orders yet</h2>
+  <p class="text-sm text-slate-400 mb-6">
+    Place your first order to see it here.
+  </p>
+  <a
+    href="/web/products"
+    class="btn-primary inline-flex items-center gap-2 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm"
+  >
+    Browse Products
+  </a>
+</div>
+{% endif %} {% endblock %}

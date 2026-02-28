@@ -13,11 +13,13 @@ from pydantic import ValidationError
 from schemas import UserCreate, LoginRequest
 from services import auth_service
 from utils.responses import success_response, error_response
+from middleware.rate_limit import rate_limit
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/v1/auth")
 
 
 @auth_bp.route("/register", methods=["POST"])
+@rate_limit(max_calls=5, period=60, scope="auth_register")
 def register():
     """Register a new user. Returns user and tokens.
     ---
@@ -61,6 +63,7 @@ def register():
 
 
 @auth_bp.route("/login", methods=["POST"])
+@rate_limit(max_calls=5, period=60, scope="auth_login")
 def login():
     """Login with email and password. Returns tokens and user.
     ---
@@ -121,6 +124,7 @@ def logout():
 
 
 @auth_bp.route("/password-reset", methods=["POST"])
+@rate_limit(max_calls=3, period=60, scope="auth_pw_reset")
 def password_reset_request():
     """Request password reset (sends token if email exists; no leak).
     ---

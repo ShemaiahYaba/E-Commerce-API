@@ -8,10 +8,10 @@ from flasgger import Swagger
 
 from config import get_settings
 from config.swagger import SWAGGER_TEMPLATE
-from database import db, migrate
-from error_handlers import register_error_handlers
+from config.database import db, migrate          # ← moved into config/
+from errors.handlers import register_error_handlers  # ← moved into errors/
 from routes import register_blueprints
-from routes.webdocs import webdocs_bp
+from routes.web import register_web_blueprints   # ← modular web sub-blueprints
 
 
 def create_app(config_name: str | None = None) -> Flask:
@@ -36,7 +36,7 @@ def create_app(config_name: str | None = None) -> Flask:
 
     @app.before_request
     def normalize_authorization_header():
-        """Accept token with or without 'Bearer ' prefix (e.g. paste token only in Swagger)."""
+        """Accept token with or without 'Bearer ' prefix."""
         from flask import request
         auth = request.headers.get("Authorization")
         if auth and not auth.strip().lower().startswith("bearer "):
@@ -55,30 +55,23 @@ def create_app(config_name: str | None = None) -> Flask:
         template=SWAGGER_TEMPLATE,
         config={
             "headers": [],
-            "specs": [{"endpoint": "apispec", "route": "/apispec.json", "rule_filter": lambda r: True, "model_filter": lambda m: True}],
+            "specs": [{"endpoint": "apispec", "route": "/apispec.json",
+                        "rule_filter": lambda r: True, "model_filter": lambda m: True}],
             "static_url_path": "/flasgger_static",
             "swagger_ui": True,
             "specs_route": "/docs",
-            # Avoid "None is not defined" in Swagger UI: template uses auth in JS (expects JSON, not Python None).
             "auth": {},
         },
     )
 
-    register_blueprints(app)
-    app.register_blueprint(webdocs_bp)
+    register_blueprints(app)       # API blueprints
+    register_web_blueprints(app)   # Web UI blueprints (modular)
     register_error_handlers(app)
 
     with app.app_context():
-        from models import (  # noqa: F401 - register models for migrate
-            User,
-            Category,
-            Product,
-            ProductImage,
-            CartItem,
-            Order,
-            OrderItem,
-            Review,
-            WishlistItem,
+        from models import (  # noqa: F401 – register models for flask-migrate
+            User, Category, Product, ProductImage,
+            CartItem, Order, OrderItem, Review, WishlistItem,
         )
 
     return app

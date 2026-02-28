@@ -1,66 +1,330 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}E-Commerce API{% endblock %}</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
-  <!-- Navigation -->
-  <nav class="bg-white shadow border-b border-gray-200 px-4 py-3">
-    <div class="max-w-7xl mx-auto flex justify-between items-center">
-      <a href="/web/products" class="text-xl font-bold text-blue-600">E-Commerce API</a>
+<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}ShopAPI Demo{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      .gradient-text {
+        background: linear-gradient(
+          135deg,
+          #6366f1 0%,
+          #8b5cf6 50%,
+          #06b6d4 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .glass {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .card-hover {
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15);
+      }
+      /* Product card thumbnail backgrounds — avoids Jinja inside style attr */
+      .card-bg-0 {
+        background: linear-gradient(135deg, #eef2ff, #c7d2fe);
+      }
+      .card-bg-1 {
+        background: linear-gradient(135deg, #f0fdf4, #bbf7d0);
+      }
+      .card-bg-2 {
+        background: linear-gradient(135deg, #fff7ed, #fed7aa);
+      }
+      .card-bg-3 {
+        background: linear-gradient(135deg, #fdf4ff, #e9d5ff);
+      }
+      .card-bg-4 {
+        background: linear-gradient(135deg, #ecfeff, #a5f3fc);
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        transition:
+          opacity 0.2s,
+          transform 0.15s;
+      }
+      .btn-primary:hover {
+        opacity: 0.92;
+        transform: translateY(-1px);
+      }
+      .btn-primary:active {
+        transform: translateY(0);
+      }
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .flash-anim {
+        animation: slideDown 0.3s ease forwards;
+      }
+      .nav-link {
+        position: relative;
+        transition: color 0.2s;
+      }
+      .nav-link::after {
+        content: "";
+        position: absolute;
+        bottom: -4px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #6366f1, #06b6d4);
+        border-radius: 999px;
+        transform: scaleX(0);
+        transition: transform 0.2s ease;
+      }
+      .nav-link:hover::after {
+        transform: scaleX(1);
+      }
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900 min-h-full flex flex-col">
+    <!-- Gradient top bar -->
+    <div
+      class="h-1 w-full"
+      style="background: linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4)"
+    ></div>
 
-      <div class="flex gap-4 items-center">
-        {% if session.get('access_token') %}
-          <!-- Logged in -->
-          <span class="text-sm text-gray-600">
-            {{ session.get('user_email', 'User') }}
-            {% if session.get('user_role') == 'admin' %}
-              <span class="ml-1 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">Admin</span>
-            {% endif %}
-          </span>
-          <a href="/web/cart" class="text-gray-700 hover:text-blue-600">Cart</a>
-          <a href="/web/orders" class="text-gray-700 hover:text-blue-600">Orders</a>
-          {% if session.get('user_role') == 'admin' %}
-            <a href="/web/admin" class="text-gray-700 hover:text-blue-600">Admin</a>
-          {% endif %}
-          <a href="/web/logout" class="text-red-600 hover:text-red-700">Logout</a>
-        {% else %}
-          <!-- Not logged in -->
-          <a href="/web/login" class="text-blue-600 hover:underline">Login</a>
-          <a href="/web/register" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Register</a>
-        {% endif %}
-
-        <a href="/docs" class="text-gray-500 hover:underline text-sm">Swagger</a>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Flash Messages -->
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="max-w-7xl mx-auto px-4 mt-4 w-full">
-        {% for category, message in messages %}
-          <div class="p-4 rounded-lg mb-2 {% if category == 'error' %}bg-red-100 border-l-4 border-red-500 text-red-700{% elif category == 'success' %}bg-green-100 border-l-4 border-green-500 text-green-700{% else %}bg-blue-100 border-l-4 border-blue-500 text-blue-700{% endif %}">
-            {{ message }}
+    <!-- Navigation -->
+    <nav class="glass border-b border-slate-200/80 sticky top-0 z-50 px-4 py-3">
+      <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <!-- Logo -->
+        <a href="/web/products" class="flex items-center gap-2 group">
+          <div
+            class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold"
+            style="background: linear-gradient(135deg, #6366f1, #8b5cf6)"
+          >
+            S
           </div>
-        {% endfor %}
+          <span class="font-bold text-xl gradient-text">ShopAPI</span>
+          <span class="text-slate-400 text-sm font-normal hidden sm:block"
+            >Demo</span
+          >
+        </a>
+
+        <!-- Nav links -->
+        <div class="flex items-center gap-1 sm:gap-3">
+          {% if session.get('access_token') %}
+          <a
+            href="/web/products"
+            class="nav-link text-sm font-medium text-slate-600 hover:text-indigo-600 px-2 py-1"
+            >Products</a
+          >
+          <a
+            href="/web/cart"
+            class="nav-link text-sm font-medium text-slate-600 hover:text-indigo-600 px-2 py-1 flex items-center gap-1"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+              />
+            </svg>
+            Cart
+          </a>
+          <a
+            href="/web/orders"
+            class="nav-link text-sm font-medium text-slate-600 hover:text-indigo-600 px-2 py-1"
+            >Orders</a
+          >
+          {% if session.get('user_role') == 'admin' %}
+          <a
+            href="/web/admin"
+            class="nav-link text-sm font-medium text-slate-600 hover:text-indigo-600 px-2 py-1 flex items-center gap-1"
+          >
+            <span
+              class="w-1.5 h-1.5 rounded-full bg-indigo-500 inline-block"
+            ></span
+            >Admin
+          </a>
+          {% endif %}
+
+          <!-- User pill -->
+          <div
+            class="flex items-center gap-2 ml-2 pl-3 border-l border-slate-200"
+          >
+            <div
+              class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
+              style="background: linear-gradient(135deg, #6366f1, #06b6d4)"
+            >
+              {{ (session.get('user_name') or session.get('user_email',
+              'U'))[0].upper() }}
+            </div>
+            <span
+              class="text-sm text-slate-600 hidden sm:block max-w-[120px] truncate"
+            >
+              {{ session.get('user_name') or session.get('user_email') }}
+            </span>
+            {% if session.get('user_role') == 'admin' %}
+            <span
+              class="px-1.5 py-0.5 rounded text-[10px] font-semibold text-indigo-700 bg-indigo-100"
+              >ADMIN</span
+            >
+            {% endif %}
+            <a
+              href="/web/logout"
+              class="ml-1 text-xs text-slate-400 hover:text-red-500 transition-colors"
+              title="Logout"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+            </a>
+          </div>
+          {% else %}
+          <a
+            href="/web/login"
+            class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors px-3 py-1.5"
+            >Login</a
+          >
+          <a
+            href="/web/register"
+            class="btn-primary text-sm font-semibold text-white px-4 py-1.5 rounded-lg shadow-sm"
+          >
+            Get Started
+          </a>
+          {% endif %}
+
+          <a
+            href="/docs"
+            class="hidden sm:flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors ml-2 pl-3 border-l border-slate-200"
+          >
+            <svg
+              class="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              />
+            </svg>
+            Swagger
+          </a>
+        </div>
       </div>
-    {% endif %}
-  {% endwith %}
+    </nav>
 
-  <!-- Main Content -->
-  <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
-    {% block content %}{% endblock %}
-  </main>
-
-  <!-- Footer -->
-  <footer class="bg-white border-t border-gray-200 py-4 mt-8">
-    <div class="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
-      E-Commerce API Demo • Built with Flask + Tailwind
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div class="max-w-7xl mx-auto w-full px-4 pt-4 space-y-2">
+      {% for category, message in messages %}
+      <div
+        class="flash-anim flex items-start gap-3 px-4 py-3 rounded-xl border text-sm font-medium {% if category == 'error' %}bg-red-50 border-red-200 text-red-700 {% elif category == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-700 {% else %}bg-indigo-50 border-indigo-200 text-indigo-700{% endif %}"
+      >
+        {% if category == 'error' %}
+        <svg
+          class="w-4 h-4 mt-0.5 shrink-0"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        {% elif category == 'success' %}
+        <svg
+          class="w-4 h-4 mt-0.5 shrink-0"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        {% else %}
+        <svg
+          class="w-4 h-4 mt-0.5 shrink-0"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        {% endif %} {{ message }}
+      </div>
+      {% endfor %}
     </div>
-  </footer>
-</body>
+    {% endif %} {% endwith %}
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto w-full px-4 py-8 flex-1">
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-200 bg-white py-6 mt-8">
+      <div
+        class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-slate-400"
+      >
+        <span
+          >ShopAPI Demo — built with
+          <span class="gradient-text font-semibold"
+            >Flask + Tailwind</span
+          ></span
+        >
+        <div class="flex items-center gap-4">
+          <a href="/docs" class="hover:text-indigo-500 transition-colors"
+            >Swagger Docs</a
+          >
+          <a
+            href="/api/v1/health"
+            class="hover:text-indigo-500 transition-colors"
+            >Health Check</a
+          >
+        </div>
+      </div>
+    </footer>
+  </body>
 </html>
