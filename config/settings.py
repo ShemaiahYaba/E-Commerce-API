@@ -34,6 +34,15 @@ class BaseConfig(BaseSettings):
     DATABASE_URL: str = ""
     # Comma-separated in .env (e.g. CORS_ORIGINS=http://localhost:3000,http://localhost:5000)
     CORS_ORIGINS: str = ""
+    
+    # Mail Config (Defaults to Resend SMTP)
+    MAIL_SERVER: str = "smtp.resend.com"
+    MAIL_PORT: int = 587
+    MAIL_USE_TLS: bool = True
+    MAIL_USE_SSL: bool = False
+    MAIL_USERNAME: str = "resend"
+    MAIL_PASSWORD: str = ""
+    MAIL_DEFAULT_SENDER: str = "noreply@resend.dev"
 
     @property
     def cors_origins_list(self) -> List[str]:

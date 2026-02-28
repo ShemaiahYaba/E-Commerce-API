@@ -139,31 +139,25 @@
         </div>
       </div>
 
-      <form method="POST" action="/web/cart/checkout">
-        <button
-          type="submit"
-          class="btn-primary w-full text-white font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2"
+      <a
+        href="/web/cart/checkout"
+        class="btn-primary w-full text-white font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          Place Order
-        </button>
-      </form>
-
-      <p class="text-xs text-slate-400 text-center mt-3">
-        Simulated payment — no real charges
-      </p>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        Proceed to Checkout
+      </a>
     </div>
   </div>
 </div>

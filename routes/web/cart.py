@@ -70,15 +70,40 @@ def cart_remove(item_id: int):
     return redirect(url_for("web_cart.cart_view"))
 
 
+@cart_web_bp.route("/cart/checkout", methods=["GET"])
+def cart_checkout_view():
+    guard = require_login()
+    if guard:
+        return guard
+
+    try:
+        cart = cart_service.get_cart(session["user_id"])
+    except Exception:
+        flash("Error loading cart.", "error")
+        return redirect(url_for("web_products.products_list"))
+
+    if not cart["items"]:
+        flash("Your cart is empty. Add some items to checkout.", "error")
+        return redirect(url_for("web_cart.cart_view"))
+
+    return render_template("cart/checkout.html", items=cart["items"], total=cart["total"])
+
+
 @cart_web_bp.route("/cart/checkout", methods=["POST"])
 def cart_checkout():
     guard = require_login()
     if guard:
         return guard
 
+    payment_intent_id = request.form.get("payment_intent_id", "").strip()
+    if not payment_intent_id or not payment_intent_id.startswith("pi_sim_"):
+        flash("Invalid or missing payment authorization.", "error")
+        return redirect(url_for("web_cart.cart_checkout_view"))
+
     try:
-        order = order_service.create_order(session["user_id"])
-        flash(f"Order #{order.id} placed successfully! 🎉", "success")
+        # In a real app we'd verify the intent via the Stripe API here
+        order = order_service.create_order(session["user_id"], payment_intent_id)
+        flash(f"Order #{order.id} placed successfully! A receipt has been sent to your email.", "success")
         return redirect(url_for("web_orders.order_detail", order_id=order.id))
     except Exception as e:
         flash(getattr(e, "message", "Could not place order."), "error")

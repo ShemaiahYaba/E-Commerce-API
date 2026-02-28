@@ -1,0 +1,135 @@
+{% extends "base.html" %} 
+{% block title %}Checkout — ShopAPI Demo{% endblock %} 
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-3xl font-bold text-slate-800">Checkout</h1>
+    <a href="/web/cart" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Back to Cart
+    </a>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:flex-row">
+    
+    <!-- Order Summary Sidebar -->
+    <div class="bg-slate-50 p-6 md:w-1/3 border-b md:border-b-0 md:border-r border-slate-200">
+      <h2 class="font-bold text-slate-800 mb-4">Order Summary</h2>
+      <div class="space-y-3 mb-6">
+        {% for item in items %}
+        <div class="flex justify-between text-sm">
+          <span class="text-slate-600 truncate mr-2">{{ item.product.name }} <span class="text-xs text-slate-400">x{{ item.quantity }}</span></span>
+          <span class="text-slate-800 font-medium">${{ "%.2f"|format(item.product.price * item.quantity) }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="border-t border-slate-200 pt-4 flex justify-between items-center">
+        <span class="font-bold text-slate-800">Total</span>
+        <span class="text-xl font-extrabold text-indigo-600">${{ "%.2f"|format(total) }}</span>
+      </div>
+    </div>
+
+    <!-- Payment Form -->
+    <div class="p-6 md:w-2/3">
+      <h2 class="text-xl font-bold text-slate-800 mb-1">Payment Details</h2>
+      <p class="text-sm text-slate-500 mb-6">This is a simulated checkout. No real money will be charged.</p>
+
+      <form id="checkout-form" method="POST" action="/web/cart/checkout">
+        <!-- We will inject the generated payment_intent_id here via JS -->
+        <input type="hidden" name="payment_intent_id" id="payment_intent_id" value="">
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">Name on Card</label>
+            <input type="text" value="{{ session.get('user_name', '') }}" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 font-medium text-slate-700">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">Card Number</label>
+            <div class="relative">
+              <input type="text" placeholder="•••• •••• •••• ••••" required maxlength="19" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 font-mono tracking-widest text-slate-700 pl-12" value="4242 4242 4242 4242">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-4">
+            <div class="flex-1">
+              <label class="block text-sm font-semibold text-slate-700 mb-1">Expiration</label>
+              <input type="text" placeholder="MM/YY" required maxlength="5" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 font-mono text-slate-700 text-center" value="12/26">
+            </div>
+            <div class="flex-1">
+              <label class="block text-sm font-semibold text-slate-700 mb-1">CVC</label>
+              <input type="password" placeholder="•••" required maxlength="4" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 font-mono text-slate-700 text-center" value="123">
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" id="submit-btn" class="w-full mt-8 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-md transition-all flex justify-center items-center gap-2">
+          <span id="btn-text">Pay ${{ "%.2f"|format(total) }}</span>
+          <svg id="btn-spinner" class="animate-spin hidden h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('checkout-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const btn = document.getElementById('submit-btn');
+    const btnText = document.getElementById('btn-text');
+    const spinner = document.getElementById('btn-spinner');
+    
+    // UI Loading state
+    btn.disabled = true;
+    btn.classList.add('opacity-80', 'cursor-not-allowed');
+    btnText.textContent = 'Processing...';
+    spinner.classList.remove('hidden');
+
+    try {
+      // 1. Fetch a simulated Payment Intent from the backend API
+      const response = await fetch('/api/v1/orders/payment-intent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer {{ session.get("access_token") }}' // The API expects JWT format if strictly enforced, but relies on cookie normally in real app.
+        }
+      });
+      
+      const data = await response.json();
+      
+      // Simulate real-world network delay for the payment gateway processing
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      if (response.ok && data.data && data.data.payment_intent_id) {
+        // 2. Attach the generated intent ID to our hidden form input
+        document.getElementById('payment_intent_id').value = data.data.payment_intent_id;
+        
+        btnText.textContent = 'Securing Order...';
+        
+        // 3. Actually submit the standard HTML form to create the order synchronously
+        this.submit();
+      } else {
+        throw new Error(data.error || 'Failed to initialize payment.');
+      }
+    } catch (error) {
+      alert('Payment processing failed: ' + error.message);
+      
+      // Reset UI
+      btn.disabled = false;
+      btn.classList.remove('opacity-80', 'cursor-not-allowed');
+      btnText.textContent = 'Pay ${{ "%.2f"|format(total) }}';
+      spinner.classList.add('hidden');
+    }
+  });
+</script>
+{% endblock %}

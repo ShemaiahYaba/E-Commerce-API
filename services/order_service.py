@@ -9,6 +9,10 @@ from models import Order, OrderItem, CartItem, Product
 from exceptions import OrderNotFoundError, ValidationError
 from validators import OrderValidator
 from services.base_service import BaseService
+from models import User
+from config.mail import mail
+from flask_mail import Message
+from flask import current_app
 
 
 def _get_cart_items(user_id: int) -> List[CartItem]:
@@ -75,12 +79,13 @@ def _clear_user_cart(user_id: int) -> None:
     CartItem.query.filter_by(user_id=user_id).delete()
 
 
-def create_order(user_id: int) -> Order:
-    """Create order from cart; decrement stock, clear cart. Simulate payment_intent_id."""
+def create_order(user_id: int, payment_intent_id: str | None = None) -> Order:
+    """Create order from cart; decrement stock, clear cart. Uses provided intent or simulates."""
     cart_items = _get_cart_items(user_id)
     _verify_cart_stock(cart_items)
     total = _calculate_cart_total(cart_items)
-    payment_intent_id = _generate_payment_intent_id()
+    if not payment_intent_id:
+        payment_intent_id = _generate_payment_intent_id()
 
     order = _create_order_object(user_id, total, payment_intent_id)
     _create_order_items_from_cart(order, cart_items)
@@ -89,6 +94,51 @@ def create_order(user_id: int) -> Order:
 
     db.session.commit()
     db.session.refresh(order)
+    
+    # Send Order Confirmation Email
+    user = db.session.get(User, user_id)
+    if user and user.email:
+        msg = Message(
+            subject=f"Order Confirmation #{order.id}",
+            recipients=[user.email]
+        )
+        msg.body = f"Thank you for your order! Your total is ${total:,.2f}."
+        
+        # Build Item rows
+        items_html = ""
+        for ci in cart_items:
+            product = db.session.get(Product, ci.product_id)
+            items_html += f"""
+            <tr>
+                <td style="padding: 10px; border-bottom: 1px solid #eee;">{product.name} x {ci.quantity}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">${(product.price * ci.quantity):,.2f}</td>
+            </tr>
+            """
+            
+        msg.html = f"""
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+            <h2 style="color: #4f46e5;">Order Confirmed!</h2>
+            <p>Hi {user.first_name},</p>
+            <p>We've received your order <strong>#{order.id}</strong>. We'll let you know when it ships.</p>
+            
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h3 style="margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Order Summary</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    {items_html}
+                    <tr>
+                        <td style="padding: 15px 10px; font-weight: bold; text-align: right;">Total</td>
+                        <td style="padding: 15px 10px; font-weight: bold; text-align: right; color: #4f46e5;">${total:,.2f}</td>
+                    </tr>
+                </table>
+            </div>
+            <p style="font-size: 14px; color: #666;">Thank you for shopping with us!</p>
+        </div>
+        """
+        try:
+            mail.send(msg)
+        except Exception as e:
+            current_app.logger.error(f"Failed to send order confirmation email: {e}")
+            
     return order
 
 

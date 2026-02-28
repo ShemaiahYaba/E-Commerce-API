@@ -9,6 +9,9 @@ from models import User
 from schemas import UserCreate, UserResponse
 from exceptions import DuplicateEmailError, InvalidCredentialsError, DatabaseError
 from services.base_service import BaseService
+from config.mail import mail
+from flask_mail import Message
+from flask import current_app, url_for
 
 
 # In-memory blocklist for logout (single process); use DB/Redis in production
@@ -69,12 +72,46 @@ _reset_tokens: dict[str, int] = {}  # token -> user_id
 
 
 def request_password_reset(email: str) -> None:
-    """Store a reset token for the user (no email sent in minimal version)."""
+    """Store a reset token for the user and send an email via Flask-Mail."""
     user = User.query.filter_by(email=email.lower()).first()
     if user:
         import secrets
         token = secrets.token_urlsafe(32)
         _reset_tokens[token] = user.id
+        
+        # Build the reset URL
+        from flask import request
+        # fallback to a default host if request is not available
+        host_url = request.host_url if request else "http://localhost:5000/"
+        reset_url = f"{host_url.rstrip('/')}/web/reset-password?token={token}"
+        
+        # We'll use the mail client directly
+        msg = Message(
+            subject="Password Reset Request",
+            recipients=[user.email]
+        )
+        msg.body = f"Click the link to reset your password: {reset_url}"
+        msg.html = f"""
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2>Reset your Password</h2>
+            <p>Hi {user.first_name},</p>
+            <p>We received a request to reset your password for your ShopAPI account.</p>
+            <p>
+                <a href="{reset_url}" style="display: inline-block; padding: 10px 20px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                    Reset Password
+                </a>
+            </p>
+            <p style="color: #666; font-size: 14px; margin-top: 30px;">
+                If you didn't request this, you can safely ignore this email.
+            </p>
+        </div>
+        """
+        
+        try:
+            mail.send(msg)
+        except Exception as e:
+            current_app.logger.error(f"Failed to send reset email: {e}")
+            
     # Always return without leaking whether email exists
 
 
