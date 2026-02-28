@@ -22,7 +22,7 @@ primary_region = "iad"
 
 [deploy]
   # This runs your database migrations before swapping traffic to the new instances!
-  release_command = "flask db upgrade"
+  release_command = "bash scripts/setup_db.sh"
 
 [[http_service.checks]]
   grace_period = "10s"
