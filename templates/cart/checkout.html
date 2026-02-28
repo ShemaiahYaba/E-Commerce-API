@@ -118,6 +118,9 @@
         
         // 3. Actually submit the standard HTML form to create the order synchronously
         this.submit();
+      } else if (response.status === 401) {
+          alert('Your session has expired. Please log in again.');
+          window.location.href = '/web/login';
       } else {
         throw new Error(data.error || 'Failed to initialize payment.');
       }
