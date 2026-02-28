@@ -77,6 +77,9 @@ def create_app(config_name: str | None = None) -> Flask:
         # Fly.io release commands run on separate ephemeral machines. 
         # If using SQLite, the migrated DB is lost! We must create tables on boot.
         if settings.DATABASE_URL.startswith("sqlite"):
-            db.create_all()
+            import sys
+            # Do not run create_all if we are running Alembic migrations via flask CLI
+            if not sys.argv[0].endswith("flask"):
+                db.create_all()
 
     return app
