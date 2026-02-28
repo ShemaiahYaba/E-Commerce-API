@@ -21,6 +21,8 @@ def create_app(config_name: str | None = None) -> Flask:
 
     app = Flask(__name__)
     app.config["SECRET_KEY"] = settings.SECRET_KEY
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
     app.config["SQLALCHEMY_DATABASE_URI"] = settings.DATABASE_URL
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["JWT_SECRET_KEY"] = settings.JWT_SECRET_KEY
