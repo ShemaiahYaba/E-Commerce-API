@@ -1,6 +1,6 @@
 # fly.toml app configuration file generated for E-Commerce-API
 
-app = "ecommerce-api-demo" # Fly.io will prompt you to change this or keep it during `fly launch`
+app = "e-commerce-api-qnpzvq" # Changed to match your live Fly.io app
 primary_region = "iad"
 
 [build]
