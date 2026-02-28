@@ -13,11 +13,28 @@
   <div class="md:flex">
 
     <!-- Visual -->
-    <div class="md:w-5/12 flex flex-col items-center justify-center p-12 min-h-72" style="background:linear-gradient(135deg,#eef2ff 0%,#f5f3ff 50%,#ecfeff 100%)">
-      <div class="w-32 h-32 rounded-3xl flex items-center justify-center mb-4 shadow-lg bg-white">
-        <svg class="w-16 h-16 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-      </div>
-      <code class="text-xs text-slate-400 bg-white/60 px-3 py-1 rounded-full font-mono">{{ product.sku }}</code>
+    <div class="md:w-5/12 flex flex-col items-center justify-center p-8 min-h-72 border-r border-slate-100 relative" style="background:linear-gradient(135deg,#eef2ff 0%,#f5f3ff 50%,#ecfeff 100%)">
+      {% if product.images and product.images|length > 0 %}
+        <div class="w-full flex flex-col items-center gap-4">
+          <div class="w-full max-w-sm aspect-square rounded-3xl overflow-hidden shadow-lg bg-white">
+            <img src="{{ product.images[0].url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+          </div>
+          {% if product.images|length > 1 %}
+          <div class="flex flex-wrap items-center justify-center gap-3">
+            {% for img in product.images[1:] %}
+            <div class="w-16 h-16 rounded-xl overflow-hidden shadow-sm bg-white border border-slate-200">
+              <img src="{{ img.url }}" alt="{{ product.name }}" class="w-full h-full object-cover opacity-80 hover:opacity-100 transition cursor-pointer">
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="w-32 h-32 rounded-3xl flex items-center justify-center mb-4 shadow-lg bg-white">
+          <svg class="w-16 h-16 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        </div>
+      {% endif %}
+      <code class="absolute bottom-4 right-4 text-[10px] text-slate-400 bg-white/60 px-2 py-1 rounded font-mono">{{ product.sku }}</code>
     </div>
 
     <!-- Details -->

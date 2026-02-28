@@ -87,10 +87,14 @@
 
     <a href="/web/products/{{ product.id }}" class="block">
       <div class="h-48 flex flex-col items-center justify-center relative overflow-hidden card-bg-{{ loop.index0 % 5 }}">
+        {% if product.images and product.images|length > 0 %}
+        <img src="{{ product.images[0].url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+        {% else %}
         <svg class="w-16 h-16 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        {% endif %}
         <span class="absolute bottom-2 right-2 text-[10px] font-mono text-slate-400 bg-white/70 px-1.5 py-0.5 rounded">{{ product.sku }}</span>
-        {% if product.stock == 0 %}<span class="absolute top-2 left-2 text-[10px] font-semibold bg-red-100 text-red-600 px-2 py-0.5 rounded-full">Out of Stock</span>
-        {% elif product.stock <= 5 %}<span class="absolute top-2 left-2 text-[10px] font-semibold bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full">Low Stock</span>
+        {% if product.stock == 0 %}<span class="absolute top-2 left-2 text-[10px] font-semibold bg-red-100 text-red-600 px-2 py-0.5 rounded-full shadow-sm">Out of Stock</span>
+        {% elif product.stock <= 5 %}<span class="absolute top-2 left-2 text-[10px] font-semibold bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full shadow-sm">Low Stock</span>
         {% endif %}
       </div>
     </a>

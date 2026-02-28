@@ -20,6 +20,7 @@ def products_list():
 
     search = request.args.get("q", "").strip()
     category_id = request.args.get("category_id", type=int)
+    subcategory_id = request.args.get("subcategory_id", type=int)
     page = request.args.get("page", 1, type=int)
     min_price = request.args.get("min_price", type=float)
     max_price = request.args.get("max_price", type=float)
@@ -32,6 +33,7 @@ def products_list():
             per_page=12,
             search=search or None,
             category_id=category_id,
+            subcategory_id=subcategory_id,
             min_price=min_price,
             max_price=max_price,
             in_stock_only=in_stock,
@@ -51,6 +53,7 @@ def products_list():
         pages=result["pages"],
         categories=categories,
         current_category=category_id,
+        current_subcategory=subcategory_id,
         search_query=search,
         min_price=min_price,
         max_price=max_price,

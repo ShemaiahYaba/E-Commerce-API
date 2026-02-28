@@ -14,6 +14,7 @@ from services.base_service import BaseService
 def _build_query(
     search: Optional[str] = None,
     category_id: Optional[int] = None,
+    subcategory_id: Optional[int] = None,
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
     min_rating: Optional[float] = None,
@@ -23,8 +24,13 @@ def _build_query(
     q = Product.query.filter(Product.is_active == True)
     if search:
         q = q.filter(Product.name.ilike(f"%{search}%") | Product.description.ilike(f"%{search}%"))
-    if category_id is not None:
-        q = q.filter(Product.category_id == category_id)
+    
+    if subcategory_id is not None:
+        q = q.filter(Product.category_id == subcategory_id)
+    elif category_id is not None:
+        # Fetching categories directly linked or those that are subcategories of this parent
+        subcats = db.session.query(Category.id).filter(Category.parent_id == category_id).subquery()
+        q = q.filter((Product.category_id == category_id) | Product.category_id.in_(subcats))
     if min_price is not None:
         q = q.filter(Product.price >= Decimal(str(min_price)))
     if max_price is not None:
@@ -75,6 +81,7 @@ def get_all_paginated(
     per_page: int = 20,
     search: Optional[str] = None,
     category_id: Optional[int] = None,
+    subcategory_id: Optional[int] = None,
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
     min_rating: Optional[float] = None,
@@ -82,7 +89,15 @@ def get_all_paginated(
 ) -> dict:
     """List products with filters and pagination."""
     per_page = min(per_page, 100)
-    q = _build_query(search, category_id, min_price, max_price, min_rating, in_stock_only)
+    q = _build_query(
+        search=search, 
+        category_id=category_id, 
+        subcategory_id=subcategory_id,
+        min_price=min_price, 
+        max_price=max_price, 
+        min_rating=min_rating, 
+        in_stock_only=in_stock_only
+    )
     total = q.count()
     items = q.order_by(Product.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
     pagination = BaseService.pagination_dict(total, page, per_page)
