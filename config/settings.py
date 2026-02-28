@@ -87,4 +87,11 @@ def get_settings(env: str | None = None) -> BaseConfig:
     name = env or os.getenv("FLASK_ENV", "development")
     if name not in _config_by_name:
         name = "development"
-    return _config_by_name[name]()
+    
+    settings = _config_by_name[name]()
+    
+    # Fix Fly.io providing 'postgres://' instead of 'postgresql://'
+    if settings.DATABASE_URL and settings.DATABASE_URL.startswith("postgres://"):
+        settings.DATABASE_URL = settings.DATABASE_URL.replace("postgres://", "postgresql://", 1)
+        
+    return settings

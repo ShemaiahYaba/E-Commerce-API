@@ -35,8 +35,9 @@ def login():
     except InvalidCredentialsError as e:
         flash(getattr(e, "message", "Invalid email or password."), "error")
         return redirect(url_for("web_auth.login"))
-    except Exception:
-        flash("An unexpected error occurred. Please try again.", "error")
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        flash(f"An unexpected error occurred: {str(e)}", "error")
         return redirect(url_for("web_auth.login"))
 
     session.update({
@@ -77,8 +78,9 @@ def register():
     except DuplicateEmailError:
         flash("An account with that email already exists.", "error")
         return redirect(url_for("web_auth.register"))
-    except Exception:
-        flash("An unexpected error occurred. Please try again.", "error")
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        flash(f"An unexpected error occurred: {str(e)}", "error")
         return redirect(url_for("web_auth.register"))
 
     session.update({

@@ -73,5 +73,10 @@ def create_app(config_name: str | None = None) -> Flask:
             User, Category, Product, ProductImage,
             CartItem, Order, OrderItem, Review, WishlistItem,
         )
+        
+        # Fly.io release commands run on separate ephemeral machines. 
+        # If using SQLite, the migrated DB is lost! We must create tables on boot.
+        if settings.DATABASE_URL.startswith("sqlite"):
+            db.create_all()
 
     return app
